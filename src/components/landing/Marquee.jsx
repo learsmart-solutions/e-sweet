@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useRef } from "react";
+import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 import {
   motion,
   useReducedMotion,
@@ -19,6 +20,8 @@ const items = [
 
 const Marquee = () => {
   const reduceMotion = useReducedMotion();
+  const sectionRef = useRef(null);
+  usePauseOffscreen(sectionRef);
   const { scrollY } = useScroll();
   const velocity = useVelocity(scrollY);
   const smoothVelocity = useSpring(velocity, {
@@ -35,6 +38,7 @@ const Marquee = () => {
 
   return (
     <section
+      ref={sectionRef}
       aria-label="Menu highlights"
       className="relative z-20 -mt-4 overflow-hidden bg-cream-hero py-2 sm:-mt-6"
     >

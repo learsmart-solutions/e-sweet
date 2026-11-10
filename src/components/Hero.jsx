@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -14,14 +9,16 @@ import {
 } from "framer-motion";
 import KitchenScene from "./KitchenScene";
 import BrandHero from "./BrandHero";
-import smokeOne from "../assets/smoke-1.png";
-import smokeTwo from "../assets/smoke-2.png";
-import smokeThree from "../assets/smoke-3.png";
+import useMediaQuery from "../hooks/useMediaQuery";
+import usePauseOffscreen from "../hooks/usePauseOffscreen";
+import smokeOne from "../assets/smoke-1.webp";
+import smokeTwo from "../assets/smoke-2.webp";
+import smokeThree from "../assets/smoke-3.webp";
 import mobileContainerBg from "../assets/mobile-container-bg.png";
 import mobileContainerOnly from "../assets/mobile-container-only.png";
-import mobileSmokeOne from "../assets/mobile-smoke-1.png";
-import mobileSmokeTwo from "../assets/mobile-smoke-2.png";
-import mobileSmokeThree from "../assets/mobile-smoke-3.png";
+import mobileSmokeOne from "../assets/mobile-smoke-1.webp";
+import mobileSmokeTwo from "../assets/mobile-smoke-2.webp";
+import mobileSmokeThree from "../assets/mobile-smoke-3.webp";
 import "../hero.css";
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
@@ -30,28 +27,34 @@ const range = (progress, start, end) =>
 const inQuad = (t) => t * t;
 const outCubic = (t) => 1 - Math.pow(1 - t, 3);
 
-const useIsPhone = () => {
-  const [isPhone, setIsPhone] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 767px) and (orientation: portrait)")
-        .matches,
-  );
+const useIsPhone = () =>
+  useMediaQuery("(max-width: 767px) and (orientation: portrait)");
 
+// A layer at opacity 0 is still composited, and its infinite CSS animations keep
+// ticking. Hiding it outright lets the browser skip it entirely.
+const useHiddenWhenClear = (opacity) =>
+  useTransform(opacity, (value) => (value > 0.001 ? "visible" : "hidden"));
+
+// Decode the full-screen frames up front so the first cross-fade into each one
+// doesn't stall on image decoding mid-scroll.
+const useDecodeImages = (sources) => {
   useEffect(() => {
-    const query = window.matchMedia(
-      "(max-width: 767px) and (orientation: portrait)",
-    );
-    const update = () => setIsPhone(query.matches);
-
-    update();
-    query.addEventListener("change", update);
-
-    return () => query.removeEventListener("change", update);
-  }, []);
-
-  return isPhone;
+    sources.forEach((src) => {
+      const image = new Image();
+      image.src = src;
+      image.decode?.().catch(() => {});
+    });
+  }, [sources]);
 };
+
+const desktopFrames = [smokeOne, smokeTwo, smokeThree];
+const phoneFrames = [
+  mobileContainerBg,
+  mobileContainerOnly,
+  mobileSmokeOne,
+  mobileSmokeTwo,
+  mobileSmokeThree,
+];
 
 const useStageFit = (containerRef) => {
   const [fit, setFit] = useState(1);
@@ -93,11 +96,14 @@ const puffs = [
   { left: "88%", top: "80%", size: 36, dx: "-2vw", dur: 24, delay: -14, op: 0.34, rot: -10 },
 ];
 
-const SmokePuffs = ({ opacity }) => (
+const SmokePuffs = ({ opacity }) => {
+  const visibility = useHiddenWhenClear(opacity);
+
+  return (
   <motion.div
     aria-hidden="true"
     className="pointer-events-none absolute inset-0 z-10 overflow-hidden"
-    style={{ opacity }}
+    style={{ opacity, visibility }}
   >
     {puffs.map((puff, index) => (
       <span
@@ -117,52 +123,72 @@ const SmokePuffs = ({ opacity }) => (
       />
     ))}
   </motion.div>
-);
+  );
+};
 
-const SmokeFrame = ({ src, opacity, scale, smokeOpacity, zIndex }) => (
-  <motion.div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 overflow-hidden"
-    style={{ opacity, scale, zIndex }}
-  >
-    <img src={src} alt="" draggable={false} className="hero-frame-img" />
-    <div className="smoke-veil" />
-    <SmokePuffs opacity={smokeOpacity} />
-    <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_50%,transparent_48%,rgba(10,6,8,0.35)_100%)]" />
-  </motion.div>
-);
+const SmokeFrame = ({ src, opacity, scale, smokeOpacity, zIndex }) => {
+  const visibility = useHiddenWhenClear(opacity);
+
+  return (
+    <motion.div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden will-change-[transform,opacity]"
+      style={{ opacity, scale, zIndex, visibility }}
+    >
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        decoding="async"
+        className="hero-frame-img"
+      />
+      <div className="smoke-veil" />
+      <SmokePuffs opacity={smokeOpacity} />
+      <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_50%,transparent_48%,rgba(10,6,8,0.35)_100%)]" />
+    </motion.div>
+  );
+};
 
 const MobileFrame = ({
   src,
   opacity,
   scale,
-  smokeOpacity = 0,
+  smokeOpacity,
   zIndex,
   position = "center",
   veil = true,
-}) => (
-  <motion.div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 overflow-hidden"
-    style={{ opacity, scale, zIndex }}
-  >
-    <img
-      src={src}
-      alt=""
-      draggable={false}
-      className="hero-frame-img"
-      style={{ objectPosition: position }}
-    />
-    {veil ? <div className="smoke-veil" /> : null}
-    {smokeOpacity > 0 ? <SmokePuffs opacity={smokeOpacity} /> : null}
-  </motion.div>
-);
+}) => {
+  const visibility = useHiddenWhenClear(opacity);
 
-const MobileLandingScene = ({ opacity, scale, zIndex }) => (
+  return (
+    <motion.div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden will-change-[transform,opacity]"
+      style={{ opacity, scale, zIndex, visibility }}
+    >
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        decoding="async"
+        className="hero-frame-img"
+        style={{ objectPosition: position }}
+      />
+      {veil ? <div className="smoke-veil" /> : null}
+      {/* smokeOpacity is a MotionValue, so test for presence, not `> 0`. */}
+      {smokeOpacity ? <SmokePuffs opacity={smokeOpacity} /> : null}
+    </motion.div>
+  );
+};
+
+const MobileLandingScene = ({ opacity, scale, zIndex }) => {
+  const visibility = useHiddenWhenClear(opacity);
+
+  return (
   <motion.div
     aria-hidden="true"
     className="pointer-events-none absolute inset-0 overflow-hidden"
-    style={{ opacity, scale, zIndex }}
+    style={{ opacity, scale, zIndex, visibility }}
   >
     <div className="mobile-scene-drift">
       <img
@@ -182,7 +208,8 @@ const MobileLandingScene = ({ opacity, scale, zIndex }) => (
       </div>
     </div>
   </motion.div>
-);
+  );
+};
 
 const MobileLandingDust = ({ opacity }) => (
   <motion.div
@@ -208,6 +235,9 @@ const Hero = ({ onNavChange }) => {
   const reduceMotion = useReducedMotion();
   const isPhone = useIsPhone();
 
+  usePauseOffscreen(sectionRef);
+  useDecodeImages(isPhone ? phoneFrames : desktopFrames);
+
   const staticReveal = useMotionValue(1);
   const staticOrbit = useMotionValue(0.9);
 
@@ -226,10 +256,6 @@ const Hero = ({ onNavChange }) => {
     }
   });
 
-  useEffect(() => {
-    if (reduceMotion) onNavChange?.(true);
-  }, [reduceMotion, onNavChange]);
-
   // Intro copy clears before the camera moves.
   const copyOpacity = useTransform(scrollYProgress, (p) =>
     1 - range(p, 0.025, 0.13),
@@ -245,6 +271,7 @@ const Hero = ({ onNavChange }) => {
   const cameraOpacity = useTransform(scrollYProgress, (p) =>
     1 - range(p, 0.255, 0.325),
   );
+  const cameraVisibility = useHiddenWhenClear(cameraOpacity);
 
   const frameOneOpacity = useTransform(scrollYProgress, (p) =>
     range(p, 0.24, 0.33) * (1 - range(p, 0.4, 0.49)),
@@ -317,6 +344,8 @@ const Hero = ({ onNavChange }) => {
   const creamOpacity = useTransform(scrollYProgress, (p) =>
     range(p, 0.8, 0.9),
   );
+  const creamVisibility = useHiddenWhenClear(creamOpacity);
+  const copyVisibility = useHiddenWhenClear(copyOpacity);
   const heroReveal = useTransform(scrollYProgress, (p) =>
     range(p, 0.88, 0.975),
   );
@@ -391,6 +420,7 @@ const Hero = ({ onNavChange }) => {
                   style={{
                     scale: cameraScale,
                     opacity: cameraOpacity,
+                    visibility: cameraVisibility,
                     transformOrigin: "50% 46%",
                   }}
                 >
@@ -428,14 +458,14 @@ const Hero = ({ onNavChange }) => {
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-[15] bg-cream-hero"
-          style={{ opacity: creamOpacity }}
+          style={{ opacity: creamOpacity, visibility: creamVisibility }}
         />
 
         <BrandHero reveal={heroReveal} orbitOpacity={orbitOpacity} />
 
         <motion.div
           className="pointer-events-none absolute inset-x-0 bottom-0 z-30 hidden md:block"
-          style={{ opacity: copyOpacity, y: copyY }}
+          style={{ opacity: copyOpacity, y: copyY, visibility: copyVisibility }}
         >
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -447,11 +477,12 @@ const Hero = ({ onNavChange }) => {
               Container kitchen · Lagos
             </p>
 
-            <h1 className="font-display text-[clamp(1.9rem,4.7vw,3.2rem)] font-black leading-[0.92] tracking-[-0.03em] text-cream [text-shadow:0_10px_30px_rgba(0,0,0,0.35)]">
+            {/* BrandHero owns the page's only <h1>. */}
+            <p className="font-display text-[clamp(1.9rem,4.7vw,3.2rem)] font-black leading-[0.92] tracking-[-0.03em] text-cream [text-shadow:0_10px_30px_rgba(0,0,0,0.35)]">
               Good food lives
               <br />
               in this box.
-            </h1>
+            </p>
 
             <p className="mt-3 text-[clamp(12px,0.95vw,15px)] text-cream/80">
               Scroll to step inside.
@@ -461,7 +492,7 @@ const Hero = ({ onNavChange }) => {
 
         <motion.div
           className="absolute bottom-6 right-5 z-30 hidden flex-col items-center gap-3 text-cream/80 sm:flex md:right-10"
-          style={{ opacity: copyOpacity }}
+          style={{ opacity: copyOpacity, visibility: copyVisibility }}
           aria-hidden="true"
         >
           <div className="relative h-11 w-[26px] rounded-full border-2 border-cream/80">
@@ -476,4 +507,6 @@ const Hero = ({ onNavChange }) => {
   );
 };
 
-export default Hero;
+// App re-renders when the nav toggles; memo keeps that from re-rendering the
+// whole hero right in the middle of the brand reveal.
+export default memo(Hero);

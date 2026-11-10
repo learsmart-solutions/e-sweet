@@ -1,6 +1,6 @@
-import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import React, { useRef } from "react";
 import Reveal from "./Reveal";
+import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 
 const testimonials = [
   {
@@ -21,10 +21,11 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
-  const reduceMotion = useReducedMotion();
+  const sectionRef = useRef(null);
+  usePauseOffscreen(sectionRef);
 
   return (
-    <section className="overflow-hidden bg-tomato px-5 py-20 text-cream sm:px-8 md:py-28 lg:px-16">
+    <section ref={sectionRef} className="overflow-hidden bg-tomato px-5 py-20 text-cream sm:px-8 md:py-28 lg:px-16">
       <div className="mx-auto w-full max-w-[1312px]">
         <Reveal className="text-center">
           <p className="font-display text-[10px] font-bold uppercase tracking-[0.32em] text-gold sm:text-[11px]">
@@ -46,43 +47,35 @@ const Testimonials = () => {
               <div
                 className={`h-full transition-transform duration-500 hover:rotate-0 ${testimonial.rotate}`}
               >
-                <motion.figure
-                  animate={
-                    reduceMotion
-                      ? undefined
-                      : {
-                          y: [0, -7, 0],
-                          rotate: [
-                            0,
-                            index % 2 === 0 ? 0.6 : -0.6,
-                            0,
-                          ],
-                        }
-                  }
-                  transition={{
-                    duration: 6.5 + index * 1.1,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 0.45,
+                {/* CSS keyframes, not a JS loop: the float runs on the
+                    compositor and pauses when the section is off-screen. */}
+                <div
+                  className="testimonial-float h-full"
+                  style={{
+                    "--float-dur": `${6.5 + index * 1.1}s`,
+                    "--float-delay": `${index * 0.45}s`,
+                    "--float-tilt": `${index % 2 === 0 ? 0.6 : -0.6}deg`,
                   }}
-                  whileHover={{ scale: 1.015 }}
-                  className="testimonial-card h-full bg-cream p-7 text-ink shadow-[0_22px_45px_rgba(90,10,5,0.24)] sm:p-8"
                 >
-                  <div
-                    aria-label="5 out of 5 stars"
-                    className="flex items-center gap-1 text-[15px] leading-none text-gold"
+                  <figure
+                    className="testimonial-card h-full bg-cream p-7 text-ink shadow-[0_22px_45px_rgba(90,10,5,0.24)] transition-transform duration-300 hover:scale-[1.015] sm:p-8"
                   >
-                    <span aria-hidden="true">★★★★★</span>
-                  </div>
+                    <div
+                      aria-label="5 out of 5 stars"
+                      className="flex items-center gap-1 text-[15px] leading-none text-gold"
+                    >
+                      <span aria-hidden="true">★★★★★</span>
+                    </div>
 
-                  <blockquote className="mt-5 font-display text-[19px] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink sm:text-[21px]">
-                    “{testimonial.quote}”
-                  </blockquote>
+                    <blockquote className="mt-5 font-display text-[19px] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink sm:text-[21px]">
+                      “{testimonial.quote}”
+                    </blockquote>
 
-                  <figcaption className="mt-5 text-[13px] font-semibold text-ink/45 sm:text-[14px]">
-                    {testimonial.author}
-                  </figcaption>
-                </motion.figure>
+                    <figcaption className="mt-5 text-[13px] font-semibold text-ink/45 sm:text-[14px]">
+                      {testimonial.author}
+                    </figcaption>
+                  </figure>
+                </div>
               </div>
             </Reveal>
           ))}
