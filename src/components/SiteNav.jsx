@@ -41,10 +41,13 @@ const SiteNav = ({ visible }) => {
         }}
         transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.9 }}
         style={{ pointerEvents: visible ? "auto" : "none" }}
+        // While hidden, keep the links out of the tab order and the
+        // accessibility tree, not just visually transparent.
+        inert={!visible}
         aria-label="Main"
         className="relative w-full max-w-[1312px]"
       >
-        <div className="flex h-[54px] items-center justify-between rounded-full bg-cream-light/95 pl-3 pr-2 shadow-[0_12px_36px_rgba(40,80,110,0.16)] ring-1 ring-black/[0.03] backdrop-blur-md sm:h-[58px] sm:pl-5 sm:pr-3">
+        <div className="flex h-[54px] items-center justify-between rounded-full bg-cream-light/95 pl-3 pr-2 shadow-[0_12px_36px_rgba(40,80,110,0.16)] ring-1 ring-black/[0.03] sm:h-[58px] sm:pl-5 sm:pr-3">
           <a
             href="#top"
             className="flex items-center gap-2.5 sm:gap-3"

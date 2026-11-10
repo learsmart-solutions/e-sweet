@@ -6,12 +6,15 @@ import React, {
 } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { dishes } from "../../data/menu";
+import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 
 const DishRail = () => {
   const sectionRef = useRef(null);
   const viewportRef = useRef(null);
   const trackRef = useRef(null);
   const [maxX, setMaxX] = useState(0);
+
+  usePauseOffscreen(sectionRef);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,

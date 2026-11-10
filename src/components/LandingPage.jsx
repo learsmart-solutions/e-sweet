@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import Marquee from "./landing/Marquee";
 import Story from "./landing/Story";
 import DishRail from "./landing/DishRail";
@@ -21,4 +21,5 @@ const LandingPage = () => (
   </>
 );
 
-export default LandingPage;
+// Memoized so toggling the nav in App does not re-render every section.
+export default memo(LandingPage);

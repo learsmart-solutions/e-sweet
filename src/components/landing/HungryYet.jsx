@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 import floatJollof from "../../assets/float-jollof.png";
 import floatFries from "../../assets/float-fries.png";
 import floatSuya from "../../assets/float-suya.png";
@@ -9,10 +10,13 @@ const letters = "Hungry yet?".split("");
 
 const HungryYet = () => {
   const reduceMotion = useReducedMotion();
+  const sectionRef = useRef(null);
+  usePauseOffscreen(sectionRef);
 
   return (
     <section
       id="order"
+      ref={sectionRef}
       className="relative overflow-hidden bg-sand px-5 py-24 sm:px-8 md:py-32 lg:py-36"
     >
       <img

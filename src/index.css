@@ -69,24 +69,30 @@
     will-change: transform;
   }
 
+  /* Performance: the veil and puffs used to carry `filter: blur()` plus
+     `mix-blend-mode: screen`. With ~30 of them animating over full-screen
+     frames, that blur/blend work ran on every frame and was the main cause
+     of hero scroll jank. The softness now lives in the gradient stops, which
+     cost nothing to animate. For near-white smoke, screen blending matches
+     plain alpha blending, so the look is the same. */
   .smoke-veil {
     position: absolute;
     inset: -8%;
     background:
       radial-gradient(
-        36% 42% at 32% 58%,
-        rgba(255, 255, 255, 0.42) 0%,
-        rgba(255, 255, 255, 0.08) 48%,
-        transparent 72%
+        40% 46% at 32% 58%,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.16) 34%,
+        rgba(255, 255, 255, 0.04) 58%,
+        transparent 80%
       ),
       radial-gradient(
-        32% 38% at 66% 42%,
-        rgba(255, 246, 230, 0.36) 0%,
-        rgba(255, 246, 230, 0.06) 52%,
-        transparent 74%
+        36% 42% at 66% 42%,
+        rgba(255, 246, 230, 0.34) 0%,
+        rgba(255, 246, 230, 0.13) 36%,
+        rgba(255, 246, 230, 0.03) 60%,
+        transparent 82%
       );
-    filter: blur(26px);
-    mix-blend-mode: screen;
     animation: smoke-veil 14s ease-in-out infinite alternate;
     will-change: transform, opacity;
   }
@@ -96,13 +102,12 @@
     border-radius: 9999px;
     background: radial-gradient(
       circle at 50% 55%,
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(255, 255, 255, 0.58) 32%,
-      rgba(255, 255, 255, 0.18) 60%,
-      transparent 74%
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.55) 26%,
+      rgba(255, 255, 255, 0.24) 48%,
+      rgba(255, 255, 255, 0.07) 62%,
+      transparent 72%
     );
-    filter: blur(18px);
-    mix-blend-mode: screen;
     opacity: 0;
     animation: smoke-rise var(--dur, 18s) ease-in-out infinite;
     animation-delay: var(--delay, 0s);
@@ -111,6 +116,12 @@
 
   .testimonial-card {
     border-radius: 24px 30px 26px 32px / 30px 24px 32px 26px;
+  }
+
+  .testimonial-float {
+    animation: testimonial-float var(--float-dur, 6.5s) ease-in-out
+      var(--float-delay, 0s) infinite;
+    will-change: transform;
   }
 
   .mobile-scene-drift {
@@ -266,7 +277,12 @@
   }
 }
 
-
+/* Set by usePauseOffscreen: freeze looping animations in sections that are
+   scrolled out of view so they stop costing frames elsewhere on the page. */
+[data-offscreen],
+[data-offscreen] * {
+  animation-play-state: paused !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -281,6 +297,7 @@
   .mobile-container-shadow,
   .mobile-dust span,
   .plate-shine,
+  .testimonial-float,
   .animate-marquee,
   .animate-orbit,
   .animate-orbit-mobile,
@@ -358,6 +375,16 @@
   }
   100% {
     transform: scale(1.055) translate3d(0, -1.4%, 0);
+  }
+}
+
+@keyframes testimonial-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -7px, 0) rotate(var(--float-tilt, 0.6deg));
   }
 }
 

@@ -1,39 +1,52 @@
 import React from "react";
 import { motion, useTransform } from "framer-motion";
-import orbitImg from "../assets/orbit.png";
-import mobileOrbitImg from "../assets/mobile-orbit.png";
+import useMediaQuery from "../hooks/useMediaQuery";
+import orbitImg from "../assets/orbit.webp";
+import mobileOrbitImg from "../assets/mobile-orbit.webp";
 
 const BrandHero = ({ reveal, orbitOpacity }) => {
+  // Matches Tailwind's `md` breakpoint. Rendering only one orbit means each
+  // device downloads one image instead of fetching both and hiding one in CSS.
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const y = useTransform(reveal, [0, 1], [42, 0]);
   const scale = useTransform(reveal, [0, 1], [0.97, 1]);
   const pointerEvents = useTransform(reveal, (value) =>
     value > 0.15 ? "auto" : "none",
   );
+  // Fully transparent for most of the hero; hidden, the spinning orbit layer
+  // costs nothing until the reveal begins.
+  const visibility = useTransform(reveal, (value) =>
+    value > 0.001 ? "visible" : "hidden",
+  );
 
   return (
     <motion.div
       className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden bg-transparent px-5 pb-16 pt-24 text-center sm:pt-28"
-      style={{ opacity: reveal, y, scale, pointerEvents }}
+      style={{ opacity: reveal, y, scale, pointerEvents, visibility }}
     >
-      <div className="pointer-events-none absolute left-1/2 top-1/2 hidden w-[195%] max-w-none -translate-x-1/2 -translate-y-1/2 select-none md:block sm:w-[142%] lg:w-[112%]">
-        <motion.img
-          src={orbitImg}
-          alt=""
-          draggable={false}
-          style={{ opacity: orbitOpacity }}
-          className="animate-orbit h-auto w-full will-change-transform"
-        />
-      </div>
-
-      <div className="pointer-events-none absolute left-1/2 top-1/2 w-[142vw] max-w-none -translate-x-1/2 -translate-y-1/2 select-none md:hidden">
-        <motion.img
-          src={mobileOrbitImg}
-          alt=""
-          draggable={false}
-          style={{ opacity: orbitOpacity }}
-          className="animate-orbit-mobile h-auto w-full will-change-transform"
-        />
-      </div>
+      {isDesktop ? (
+        <div className="pointer-events-none absolute left-1/2 top-1/2 w-[195%] max-w-none -translate-x-1/2 -translate-y-1/2 select-none sm:w-[142%] lg:w-[112%]">
+          <motion.img
+            src={orbitImg}
+            alt=""
+            draggable={false}
+            decoding="async"
+            style={{ opacity: orbitOpacity }}
+            className="animate-orbit h-auto w-full will-change-transform"
+          />
+        </div>
+      ) : (
+        <div className="pointer-events-none absolute left-1/2 top-1/2 w-[142vw] max-w-none -translate-x-1/2 -translate-y-1/2 select-none">
+          <motion.img
+            src={mobileOrbitImg}
+            alt=""
+            draggable={false}
+            decoding="async"
+            style={{ opacity: orbitOpacity }}
+            className="animate-orbit-mobile h-auto w-full will-change-transform"
+          />
+        </div>
+      )}
 
       <div className="relative z-10 flex w-full flex-col items-center">
         <h1

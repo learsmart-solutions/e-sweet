@@ -11,7 +11,6 @@ export const dishes = [
     description: "Firewood party jollof with peppered chicken and dodo.",
     price: "3,500",
     image: jollofImg,
-    fit: "cover",
   },
   {
     id: "fried-rice",
@@ -19,7 +18,6 @@ export const dishes = [
     description: "Veggie-loaded fried rice with a peppered turkey wing.",
     price: "4,200",
     image: friedImg,
-    fit: "cover",
   },
   {
     id: "pounded-yam",
@@ -27,7 +25,6 @@ export const dishes = [
     description: "Smooth pounded yam, egusi, assorted meat and stockfish.",
     price: "4,500",
     image: yamImg,
-    fit: "cover",
   },
   {
     id: "suya",
@@ -35,7 +32,6 @@ export const dishes = [
     description: "Yaji-rubbed beef skewers with onions and tomatoes.",
     price: "2,500",
     image: suyaImg,
-    fit: "cover",
   },
   {
     id: "puff-puff",
@@ -43,6 +39,5 @@ export const dishes = [
     description: "Soft, golden dough balls fried to order. Six pieces.",
     price: "1,000",
     image: puffImg,
-    fit: "contain",
   },
 ];

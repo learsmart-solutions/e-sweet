@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import Hero from "./components/Hero";
 import SiteNav from "./components/SiteNav";
 import LandingPage from "./components/LandingPage";
 
 const App = () => {
-  // Updated E-Sweet website
   const [navVisible, setNavVisible] = useState(false);
+  // Reduced-motion users get the static hero, so the nav is always shown.
   const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    if (reduceMotion) setNavVisible(true);
-  }, [reduceMotion]);
 
   return (
     <main className="bg-cream">
