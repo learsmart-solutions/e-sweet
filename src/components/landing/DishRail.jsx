@@ -6,6 +6,7 @@ import React, {
 } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { dishes } from "../../data/menu";
+import { Link } from "../../lib/router";
 import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 
 const DishRail = () => {
@@ -73,13 +74,13 @@ const DishRail = () => {
               </h2>
             </div>
 
-            <a
-              href="#menu"
+            <Link
+              to="/menu"
               className="hidden items-center gap-2 rounded-full bg-tomato px-5 py-3 text-[13px] font-bold text-white shadow-[0_3px_0_#a5130c] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0 sm:inline-flex sm:px-6 sm:text-[14px]"
             >
               Full menu
               <span aria-hidden="true">→</span>
-            </a>
+            </Link>
           </div>
 
           <div
@@ -94,7 +95,7 @@ const DishRail = () => {
               {dishes.map((dish) => (
                 <article
                   key={dish.id}
-                  className="group flex w-[78vw] max-w-[300px] shrink-0 flex-col overflow-hidden rounded-[20px] bg-card p-3.5 transition-transform duration-300 hover:-translate-y-1 [@media(max-height:650px)]:w-[64vw] sm:w-[300px] sm:p-4"
+                  className="group flex w-[78vw] max-w-[300px] shrink-0 flex-col overflow-hidden rounded-[20px] bg-card p-3.5 transition-transform duration-300 hover:-translate-y-1 [@media(max-height:650px)]:w-[64vw] sm:w-[250px] sm:p-4"
                 >
                   <div className="relative -mx-3.5 -mt-3.5 aspect-[300/230] w-[calc(100%+1.75rem)] shrink-0 sm:-mx-4 sm:-mt-4 sm:w-[calc(100%+2rem)]">
                     <img
@@ -139,13 +140,13 @@ const DishRail = () => {
             </motion.div>
           </div>
 
-          <a
-            href="#menu"
+          <Link
+            to="/menu"
             className="absolute inset-x-5 bottom-5 inline-flex items-center justify-center gap-2 rounded-full bg-tomato px-6 py-3.5 text-[14px] font-bold text-white shadow-[0_3px_0_#a5130c] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0 sm:hidden"
           >
             Full menu
             <span aria-hidden="true">→</span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

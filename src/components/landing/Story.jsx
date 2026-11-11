@@ -1,6 +1,7 @@
 import React from "react";
 import AnimatedNumber from "./AnimatedNumber";
 import Reveal from "./Reveal";
+import { Link } from "../../lib/router";
 
 const stats = [
   { value: 40, suffix: " ft", label: "of kitchen, steel walls and all" },
@@ -48,13 +49,13 @@ const Story = () => (
             </p>
           </div>
 
-          <a
-            href="#menu"
+          <Link
+            to="/menu"
             className="mt-7 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-[14px] font-bold text-cream shadow-[0_4px_0_rgba(0,0,0,0.22)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-black active:translate-y-0"
           >
             Order from the window
             <span aria-hidden="true">→</span>
-          </a>
+          </Link>
         </Reveal>
       </div>
 

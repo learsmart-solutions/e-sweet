@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Link } from "../lib/router";
 
 const links = [
   { label: "Our story", href: "#story" },
@@ -47,7 +48,7 @@ const SiteNav = ({ visible }) => {
         aria-label="Main"
         className="relative w-full max-w-[1312px]"
       >
-        <div className="flex h-[54px] items-center justify-between rounded-full bg-cream-light/95 pl-3 pr-2 shadow-[0_12px_36px_rgba(40,80,110,0.16)] ring-1 ring-black/[0.03] sm:h-[58px] sm:pl-5 sm:pr-3">
+        <div className="relative flex h-[54px] items-center justify-between rounded-full bg-cream-light/95 pl-3 pr-2 shadow-[0_12px_36px_rgba(40,80,110,0.16)] ring-1 ring-black/[0.03] sm:h-[58px] sm:pl-5 sm:pr-3">
           <a
             href="#top"
             className="flex items-center gap-2.5 sm:gap-3"
@@ -59,7 +60,7 @@ const SiteNav = ({ visible }) => {
             </span>
           </a>
 
-          <div className="hidden items-center gap-8 pr-4 md:flex">
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex">
             {links.map((link) => (
               <a
                 key={link.href}
@@ -69,6 +70,21 @@ const SiteNav = ({ visible }) => {
                 {link.label}
               </a>
             ))}
+          </div>
+
+          <div className="ml-auto hidden items-center gap-2 md:flex">
+            <Link
+              to="/login"
+              className="rounded-full px-3 py-2 text-[13.5px] font-bold text-ink/75 transition-colors hover:text-tomato"
+            >
+              Log in
+            </Link>
+            <Link
+              to="/signup"
+              className="rounded-full bg-tomato px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_3px_0_#a5130c] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
+            >
+              Sign up
+            </Link>
           </div>
 
           <button
@@ -125,6 +141,23 @@ const SiteNav = ({ visible }) => {
                     </span>
                   </a>
                 ))}
+
+                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-ink/10 pt-3">
+                  <Link
+                    to="/login"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex items-center justify-center rounded-full border border-ink/15 px-4 py-3 text-[14px] font-bold text-ink/80"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex items-center justify-center rounded-full bg-tomato px-4 py-3 text-[14px] font-bold text-white shadow-[0_3px_0_#a5130c]"
+                  >
+                    Sign up
+                  </Link>
+                </div>
               </div>
             </motion.div>
           )}

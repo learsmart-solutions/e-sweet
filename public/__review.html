@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Review host</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #d9d2c7;
+        overflow: hidden;
+      }
+      iframe {
+        display: block;
+        border: 0;
+        transform-origin: top left;
+        background: #fff4e2;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="frame" title="Review frame"></iframe>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const frame = document.getElementById("frame");
+      const src = params.get("src") || "/menu";
+      const width = Number(params.get("w") || 1440);
+      const height = Number(params.get("h") || 1000);
+      const scale = Number(params.get("scale") || 0.55);
+      frame.src = src;
+      frame.style.width = `${width}px`;
+      frame.style.height = `${height}px`;
+      frame.style.transform = `scale(${scale})`;
+    </script>
+  </body>
+</html>

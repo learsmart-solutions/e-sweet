@@ -1,5 +1,6 @@
 import React from "react";
 import { motion, useTransform } from "framer-motion";
+import { navigate } from "../lib/router";
 import useMediaQuery from "../hooks/useMediaQuery";
 import orbitImg from "../assets/orbit.webp";
 import mobileOrbitImg from "../assets/mobile-orbit.webp";
@@ -69,7 +70,11 @@ const BrandHero = ({ reveal, orbitOpacity }) => {
 
         <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:mt-8 sm:w-auto sm:flex-row">
           <a
-            href="#menu"
+            href="/menu"
+            onClick={(event) => {
+              event.preventDefault();
+              navigate("/menu");
+            }}
             className="inline-flex min-w-[190px] items-center justify-center gap-2 rounded-full bg-tomato px-7 py-3.5 text-[15px] font-bold text-white shadow-[0_4px_0_#a5130c,0_14px_26px_rgba(180,30,20,0.22)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
           >
             Order take-out
@@ -77,7 +82,11 @@ const BrandHero = ({ reveal, orbitOpacity }) => {
           </a>
 
           <a
-            href="#menu"
+            href="/menu"
+            onClick={(event) => {
+              event.preventDefault();
+              navigate("/menu");
+            }}
             className="inline-flex min-w-[190px] items-center justify-center rounded-full border-2 border-ink bg-cream-light px-7 py-3.5 text-[15px] font-bold text-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-cream active:translate-y-0"
           >
             See the menu
