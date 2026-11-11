@@ -146,7 +146,7 @@ export const menuItems = [
     id: "lss-fried-turkey",
     name: "LSS Fried turkey",
     description: "Gbego turkey with our house pepper glaze.",
-    price: 3500,
+    price: 2500,
     category: "Grills",
     image: friedTurkeyImg,
   },
