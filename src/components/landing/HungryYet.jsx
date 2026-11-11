@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { navigate } from "../../lib/router";
 import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 import floatJollof from "../../assets/float-jollof.png";
 import floatFries from "../../assets/float-fries.png";
@@ -92,7 +93,11 @@ const HungryYet = () => {
         </motion.p>
 
         <motion.a
-          href="#menu"
+          href="/menu"
+          onClick={(event) => {
+            event.preventDefault();
+            navigate("/menu");
+          }}
           initial={reduceMotion ? false : { y: 18, opacity: 0 }}
           whileInView={reduceMotion ? undefined : { y: 0, opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
