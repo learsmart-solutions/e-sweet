@@ -112,6 +112,7 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
     user,
     cartEntries,
     cartCount,
+    packCount,
     subtotal,
     packs,
     addItem,
@@ -518,10 +519,12 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                         label="Subtotal"
                         value={formatNaira(subtotal)}
                       />
-                      <SummaryLine
-                        label="Take-away packs"
-                        value={formatNaira(packs)}
-                      />
+                      {packCount > 0 && (
+                        <SummaryLine
+                          label={`Take-away packs × ${packCount}`}
+                          value={formatNaira(packs)}
+                        />
+                      )}
                       {isCheckout && (
                         <SummaryLine
                           label="Delivery"

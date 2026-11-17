@@ -118,7 +118,19 @@ export const StoreProvider = ({ children }) => {
     [cartEntries],
   );
 
-  const packs = cartCount > 0 ? 400 : 0;
+  // One take-away pack is charged per food item. Drinks do not need a
+  // take-away pack, so they are excluded from the pack count.
+  const packCount = useMemo(
+    () =>
+      cartEntries.reduce(
+        (total, item) =>
+          item.category === "Drinks" ? total : total + item.quantity,
+        0,
+      ),
+    [cartEntries],
+  );
+  const takeawayPackFee = 400;
+  const packs = packCount * takeawayPackFee;
   const bagTotal = subtotal + packs;
 
   const value = {
@@ -126,6 +138,7 @@ export const StoreProvider = ({ children }) => {
     cart,
     cartEntries,
     cartCount,
+    packCount,
     subtotal,
     packs,
     bagTotal,
