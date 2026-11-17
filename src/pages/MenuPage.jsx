@@ -6,7 +6,8 @@ import AuthModal from "../components/auth/AuthModal";
 import { ContainerMark } from "../components/SiteNav";
 import { Link, navigate } from "../lib/router";
 import { menuItems } from "../data/menu";
-import { useStore } from "../context/StoreContext";
+import { formatNaira, useStore } from "../context/StoreContext";
+import { DELIVERY_FEE } from "../lib/delivery";
 import containerImg from "../assets/layers/container.png";
 
 const SearchIcon = () => (
@@ -113,8 +114,13 @@ const MenuPage = ({
               </p>
 
               <div className="mt-5 flex flex-wrap gap-2">
-                {["Pickup is free", "Delivery from ₦1,500", "Cooked to order"].map(
-                  (label) => (
+                {[
+                  "Pickup is free",
+                  DELIVERY_FEE === 0
+                    ? "Delivery is free for now"
+                    : `Delivery from ${formatNaira(DELIVERY_FEE)}`,
+                  "Cooked to order",
+                ].map((label) => (
                     <span
                       key={label}
                       className="rounded-full bg-sand px-3 py-1.5 text-[11px] font-semibold text-ink/60"
