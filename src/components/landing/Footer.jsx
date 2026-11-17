@@ -93,6 +93,9 @@ const Footer = () => (
           <a href="#visit" className="transition-colors hover:text-cream">
             Visit
           </a>
+          <a href="#faq" className="transition-colors hover:text-cream">
+            FAQ
+          </a>
         </nav>
 
         <div className="flex items-center gap-2.5">
