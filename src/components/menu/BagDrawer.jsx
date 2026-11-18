@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
+import { DELIVERY_FEE } from "../../lib/delivery";
 
 const ArrowLeft = () => (
   <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" aria-hidden="true">
@@ -133,7 +134,7 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
 
   const isCheckout = step === "checkout";
   const orderTotal = subtotal + packs;
-  const deliveryFee = isCheckout && fulfilment === "delivery" ? 1500 : 0;
+  const deliveryFee = isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
   const total = orderTotal + deliveryFee;
 
   useEffect(() => {
@@ -370,7 +371,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                             selected={fulfilment === "delivery"}
                             onClick={() => setFulfilment("delivery")}
                             title="Delivery"
-                            detail="Lekki & VI · ₦1,500"
+                            detail={
+                              DELIVERY_FEE === 0
+                                ? "Lekki & VI · Free for now"
+                                : `Lekki & VI · ${formatNaira(DELIVERY_FEE)}`
+                            }
                           />
                         </div>
                       </section>
@@ -525,7 +530,7 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                       {isCheckout && (
                         <SummaryLine
                           label="Delivery"
-                          value={formatNaira(deliveryFee)}
+                          value={deliveryFee === 0 ? "Free" : formatNaira(deliveryFee)}
                         />
                       )}
                       <div className="mt-2 border-t border-dashed border-ink/15 pt-2.5">
