@@ -1,5 +1,10 @@
 import React from "react";
 import { ContainerMark } from "../SiteNav";
+import WhatsAppIcon from "../WhatsAppIcon";
+import {
+  WHATSAPP_CONTACT_LABEL,
+  whatsappLink,
+} from "../../lib/whatsapp";
 
 const InstagramIcon = () => (
   <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden="true">
@@ -56,8 +61,20 @@ const XIcon = () => (
   </svg>
 );
 
+const whatsappHref = whatsappLink();
+
 const socials = [
   { label: "Instagram", href: "#", Icon: InstagramIcon },
+  ...(whatsappHref
+    ? [
+        {
+          label: `${WHATSAPP_CONTACT_LABEL} on WhatsApp`,
+          href: whatsappHref,
+          Icon: WhatsAppIcon,
+          external: true,
+        },
+      ]
+    : []),
   { label: "TikTok", href: "#", Icon: TikTokIcon },
   { label: "X", href: "#", Icon: XIcon },
 ];
@@ -99,11 +116,13 @@ const Footer = () => (
         </nav>
 
         <div className="flex items-center gap-2.5">
-          {socials.map(({ label, href, Icon }) => (
+          {socials.map(({ label, href, Icon, external }) => (
             <a
               key={label}
               href={href}
               aria-label={label}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noreferrer" : undefined}
               className="grid h-9 w-9 place-items-center rounded-full bg-cream/10 text-cream/80 transition-colors hover:bg-tomato hover:text-white"
             >
               <Icon />

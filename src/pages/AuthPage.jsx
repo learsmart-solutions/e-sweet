@@ -117,7 +117,7 @@ const AuthPage = ({ mode = "signup" }) => {
         </div>
       </aside>
 
-      <main className="flex min-h-svh flex-col px-5 py-6 sm:px-8 lg:px-16 lg:py-10">
+      <main className="flex min-h-svh flex-col px-5 pb-24 pt-6 sm:px-8 lg:px-16 lg:pb-10 lg:pt-10">
         <div className="flex items-center">
           <Link
             to="/"

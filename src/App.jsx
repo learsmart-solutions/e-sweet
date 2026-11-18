@@ -4,6 +4,7 @@ import { useRoute } from "./lib/router";
 import HomePage from "./pages/HomePage";
 import MenuPage from "./pages/MenuPage";
 import AuthPage from "./pages/AuthPage";
+import WhatsAppFab from "./components/WhatsAppFab";
 
 const knownRoutes = new Set([
   "/",
@@ -27,6 +28,13 @@ const App = () => {
       {route === "/signup" && <AuthPage mode="signup" />}
       {route === "/login" && <AuthPage mode="login" />}
       {(route === "/" || !knownRoutes.has(route)) && <HomePage />}
+      <WhatsAppFab
+        hidden={
+          route === "/bag" ||
+          route === "/checkout" ||
+          route === "/checkout-auth"
+        }
+      />
     </StoreProvider>
   );
 };

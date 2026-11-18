@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
+import WhatsAppIcon from "../WhatsAppIcon";
+import {
+  WHATSAPP_CONTACT_LABEL,
+  whatsappLink,
+} from "../../lib/whatsapp";
 import { DELIVERY_FEE } from "../../lib/delivery";
 
 const ArrowLeft = () => (
@@ -137,6 +142,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   const orderTotal = subtotal + packs;
   const deliveryFee = isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
   const total = orderTotal + deliveryFee;
+  const orderWhatsAppHref = orderCode
+    ? whatsappLink(
+        `Hi e'sweet ${WHATSAPP_CONTACT_LABEL.toLowerCase()}! I just placed order ${orderCode}. I'd like to confirm it.`,
+      )
+    : null;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -288,10 +298,22 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                 ))}
               </div>
 
+              {orderWhatsAppHref && (
+                <a
+                  href={orderWhatsAppHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_0_#128c4b] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#1ebe5a] active:translate-y-0"
+                >
+                  <WhatsAppIcon className="h-5 w-5" />
+                  Send order code to customer care
+                </a>
+              )}
+
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-6 w-full rounded-xl bg-ink px-5 py-3.5 text-[14px] font-bold text-cream transition-transform duration-200 hover:-translate-y-0.5 hover:bg-black active:translate-y-0"
+                className="mt-3 w-full rounded-xl bg-ink px-5 py-3.5 text-[14px] font-bold text-cream transition-transform duration-200 hover:-translate-y-0.5 hover:bg-black active:translate-y-0"
               >
                 Back to the menu
               </button>
