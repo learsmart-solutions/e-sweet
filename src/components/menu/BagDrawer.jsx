@@ -4,6 +4,7 @@ import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
 import WhatsAppIcon from "../WhatsAppIcon";
 import { whatsappLink } from "../../lib/whatsapp";
+import { DELIVERY_FEE } from "../../lib/delivery";
 
 const ArrowLeft = () => (
   <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" aria-hidden="true">
@@ -114,6 +115,7 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
     user,
     cartEntries,
     cartCount,
+    packCount,
     subtotal,
     packs,
     addItem,
@@ -135,8 +137,13 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
 
   const isCheckout = step === "checkout";
   const orderTotal = subtotal + packs;
-  const deliveryFee = isCheckout && fulfilment === "delivery" ? 1500 : 0;
+  const deliveryFee = isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
   const total = orderTotal + deliveryFee;
+  const orderWhatsAppHref = orderCode
+    ? whatsappLink(
+        `Hi e'sweet! I just placed order ${orderCode}. I'd like to confirm it.`,
+      )
+    : null;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -288,17 +295,17 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                 ))}
               </div>
 
-              <a
-                href={whatsappLink(
-                  `Hi e'sweet! I just placed order ${orderCode}. I'd like to confirm it.`,
-                )}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_0_#128c4b] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#1ebe5a] active:translate-y-0"
-              >
-                <WhatsAppIcon className="h-5 w-5" />
-                Send order code on WhatsApp
-              </a>
+              {orderWhatsAppHref && (
+                <a
+                  href={orderWhatsAppHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_0_#128c4b] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#1ebe5a] active:translate-y-0"
+                >
+                  <WhatsAppIcon className="h-5 w-5" />
+                  Send order code on WhatsApp
+                </a>
+              )}
 
               <button
                 type="button"
@@ -384,7 +391,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                             selected={fulfilment === "delivery"}
                             onClick={() => setFulfilment("delivery")}
                             title="Delivery"
-                            detail="Lekki & VI · ₦1,500"
+                            detail={
+                              DELIVERY_FEE === 0
+                                ? "Lekki & VI · Free for now"
+                                : `Lekki & VI · ${formatNaira(DELIVERY_FEE)}`
+                            }
                           />
                         </div>
                       </section>
@@ -532,14 +543,16 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                         label="Subtotal"
                         value={formatNaira(subtotal)}
                       />
-                      <SummaryLine
-                        label="Take-away packs"
-                        value={formatNaira(packs)}
-                      />
+                      {packCount > 0 && (
+                        <SummaryLine
+                          label={`Take-away packs × ${packCount}`}
+                          value={formatNaira(packs)}
+                        />
+                      )}
                       {isCheckout && (
                         <SummaryLine
                           label="Delivery"
-                          value={formatNaira(deliveryFee)}
+                          value={deliveryFee === 0 ? "Free" : formatNaira(deliveryFee)}
                         />
                       )}
                       <div className="mt-2 border-t border-dashed border-ink/15 pt-2.5">

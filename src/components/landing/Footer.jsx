@@ -58,14 +58,20 @@ const XIcon = () => (
   </svg>
 );
 
+const whatsappHref = whatsappLink();
+
 const socials = [
   { label: "Instagram", href: "#", Icon: InstagramIcon },
-  {
-    label: "WhatsApp",
-    href: whatsappLink(),
-    Icon: WhatsAppIcon,
-    external: true,
-  },
+  ...(whatsappHref
+    ? [
+        {
+          label: "WhatsApp",
+          href: whatsappHref,
+          Icon: WhatsAppIcon,
+          external: true,
+        },
+      ]
+    : []),
   { label: "TikTok", href: "#", Icon: TikTokIcon },
   { label: "X", href: "#", Icon: XIcon },
 ];
@@ -100,6 +106,9 @@ const Footer = () => (
           </a>
           <a href="#visit" className="transition-colors hover:text-cream">
             Visit
+          </a>
+          <a href="#faq" className="transition-colors hover:text-cream">
+            FAQ
           </a>
         </nav>
 

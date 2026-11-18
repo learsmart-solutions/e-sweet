@@ -6,11 +6,12 @@ import {
 } from "../lib/whatsapp";
 
 const WhatsAppFab = ({ hidden = false, message = WHATSAPP_DEFAULT_MESSAGE }) => {
-  if (hidden) return null;
+  const href = whatsappLink(message);
+  if (hidden || !href) return null;
 
   return (
     <a
-      href={whatsappLink(message)}
+      href={href}
       target="_blank"
       rel="noreferrer"
       aria-label="Chat with e'sweet on WhatsApp"

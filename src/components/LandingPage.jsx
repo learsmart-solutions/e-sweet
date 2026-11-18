@@ -5,6 +5,7 @@ import DishRail from "./landing/DishRail";
 import HowItWorks from "./landing/HowItWorks";
 import Testimonials from "./landing/Testimonials";
 import Visit from "./landing/Visit";
+import Faq from "./landing/Faq";
 import HungryYet from "./landing/HungryYet";
 import Footer from "./landing/Footer";
 
@@ -16,6 +17,7 @@ const LandingPage = () => (
     <HowItWorks />
     <Testimonials />
     <Visit />
+    <Faq />
     <HungryYet />
     <Footer />
   </>
