@@ -1,7 +1,10 @@
 import React from "react";
 import { ContainerMark } from "../SiteNav";
 import WhatsAppIcon from "../WhatsAppIcon";
-import { whatsappLink } from "../../lib/whatsapp";
+import {
+  WHATSAPP_CONTACT_LABEL,
+  whatsappLink,
+} from "../../lib/whatsapp";
 
 const InstagramIcon = () => (
   <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden="true">
@@ -65,7 +68,7 @@ const socials = [
   ...(whatsappHref
     ? [
         {
-          label: "WhatsApp",
+          label: `${WHATSAPP_CONTACT_LABEL} on WhatsApp`,
           href: whatsappHref,
           Icon: WhatsAppIcon,
           external: true,
