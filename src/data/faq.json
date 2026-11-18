@@ -1,0 +1,32 @@
+[
+  {
+    "id": "delivery",
+    "question": "Where do you deliver?",
+    "answer": "We deliver around Sango Ota and nearby Ogun communities. Delivery is free for now; any future fee will be shown at checkout. Pickup at the red window is always free."
+  },
+  {
+    "id": "timing",
+    "question": "How long does an order take?",
+    "answer": "Most orders are ready in about 15 minutes. During peak lunch and dinner hours, give us 20–30 minutes so everything can be cooked fresh."
+  },
+  {
+    "id": "preorder",
+    "question": "Can I order ahead for a later time?",
+    "answer": "Yes. Add your preferred time in the kitchen note at checkout, or message the kitchen before you order and we will schedule it for you."
+  },
+  {
+    "id": "catering",
+    "question": "Do you cater parties and events?",
+    "answer": "Yes. We cook party trays, jollof, small chops and more for events. Please give the kitchen at least 48 hours' notice so we can plan the quantities and timing."
+  },
+  {
+    "id": "spice-allergies",
+    "question": "Can you adjust pepper or handle allergies?",
+    "answer": "Tell us in the kitchen note and we will dial the pepper up or down. Our kitchen handles nuts, fish, shellfish and gluten, so we cannot guarantee zero cross-contact."
+  },
+  {
+    "id": "payment",
+    "question": "How do I pay?",
+    "answer": "Pay online by card, transfer or USSD, or choose pay on delivery. Your order is confirmed once payment is received or the kitchen accepts the order."
+  }
+]
