@@ -1,6 +1,6 @@
-// Set this to the customer care WhatsApp number (international format, no +)
-// to turn the contact points on. Leave it empty to hide them everywhere.
-export const WHATSAPP_NUMBER = "";
+import { WHATSAPP_NUMBER } from "./contact";
+
+export { WHATSAPP_NUMBER } from "./contact";
 
 export const WHATSAPP_CONTACT_LABEL = "Customer care";
 
