@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Reveal from "./Reveal";
+import { contactPhoneLink } from "../../lib/contact";
 
 const hours = [
   { days: "Mon – Thu", time: "09:00 – 21:00" },
@@ -15,6 +16,7 @@ const mapEmbed = `https://www.google.com/maps?q=${encodeURIComponent(
 const directionsLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
   address,
 )}`;
+const phoneHref = contactPhoneLink();
 
 const VisitMap = () => {
   const reduceMotion = useReducedMotion();
@@ -131,12 +133,14 @@ const Visit = () => (
               Order for pickup
               <span aria-hidden="true">→</span>
             </a>
-            <a
-              href="tel:+2348000000000"
-              className="inline-flex items-center justify-center rounded-full border-2 border-ink px-6 py-3.5 text-[14px] font-bold text-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-cream-light active:translate-y-0"
-            >
-              Call the window
-            </a>
+            {phoneHref && (
+              <a
+                href={phoneHref}
+                className="inline-flex items-center justify-center rounded-full border-2 border-ink px-6 py-3.5 text-[14px] font-bold text-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-cream-light active:translate-y-0"
+              >
+                Call the window
+              </a>
+            )}
           </div>
         </Reveal>
       </div>
