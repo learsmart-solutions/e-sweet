@@ -1,7 +1,5 @@
 import { WHATSAPP_NUMBER } from "./contact";
 
-export { WHATSAPP_NUMBER } from "./contact";
-
 export const WHATSAPP_CONTACT_LABEL = "Customer care";
 
 export const WHATSAPP_DEFAULT_MESSAGE =
