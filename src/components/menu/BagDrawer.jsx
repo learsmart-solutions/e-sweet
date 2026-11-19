@@ -468,13 +468,9 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                             detail="Card, transfer or USSD"
                             radio
                           />
-                          <OptionCard
-                            selected={payment === "delivery"}
-                            onClick={() => setPayment("delivery")}
-                            title="Pay on delivery"
-                            detail="Cash, transfer or POS"
-                            radio
-                          />
+                          <p className="px-1 text-[11px] leading-[1.45] text-ink/45">
+                            Payment on delivery is not available.
+                          </p>
                         </div>
                       </section>
                     </div>
