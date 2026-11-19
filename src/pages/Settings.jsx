@@ -26,8 +26,7 @@ const Settings = () => (
         Settings
       </h1>
       <p className="mt-4 max-w-[520px] text-[14px] leading-[1.65] text-ink/55">
-        This is where your account settings will live. We&apos;re setting the
-        page up now and will add the options here next.
+        This page is coming soon.
       </p>
     </main>
   </div>
