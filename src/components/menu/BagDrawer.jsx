@@ -396,8 +396,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                             title="Delivery"
                             detail={
                               DELIVERY_FEE === 0
-                                ? "Lekki & VI · Free for now"
-                                : `Lekki & VI · ${formatNaira(DELIVERY_FEE)}`
+                                ? "Free for now"
+                                : formatNaira(DELIVERY_FEE)
                             }
                           />
                         </div>
