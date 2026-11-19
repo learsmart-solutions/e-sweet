@@ -8,6 +8,7 @@ import {
   whatsappLink,
 } from "../../lib/whatsapp";
 import { DELIVERY_FEE } from "../../lib/delivery";
+import SchedulePicker from "./SchedulePicker";
 
 const ArrowLeft = () => (
   <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" aria-hidden="true">
@@ -127,6 +128,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   } = useStore();
   const [fulfilment, setFulfilment] = useState("delivery");
   const [when, setWhen] = useState("asap");
+  const [scheduledAt, setScheduledAt] = useState(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [payment, setPayment] = useState("online");
   const [address, setAddress] = useState(
     "14 Admiralty Way, Lekki Phase 1",
@@ -151,14 +154,19 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   useEffect(() => {
     if (!open) return undefined;
     const onKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      if (scheduleOpen) setScheduleOpen(false);
+      else onClose();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
+  }, [open, onClose, scheduleOpen]);
 
   useEffect(() => {
-    if (!open) setPlaced(false);
+    if (!open) {
+      setPlaced(false);
+      setScheduleOpen(false);
+    }
   }, [open]);
 
   const goBack = () => {
@@ -181,9 +189,18 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
       navigate("/checkout-auth?next=checkout", { scroll: false });
       return;
     }
+    if (when === "schedule" && !scheduledAt) {
+      setScheduleOpen(true);
+      return;
+    }
     const ready = new Date(Date.now() + 20 * 60 * 1000);
     setPlacedTime(
-      ready.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      when === "schedule" && scheduledAt
+        ? scheduledAt.sentence
+        : ready.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
     );
     setOrderCode(`ES-${Math.floor(1000 + Math.random() * 9000)}`);
     setPlacedTotal(total);
@@ -256,9 +273,13 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                 Order placed!
               </h2>
               <p className="mx-auto mt-2 max-w-[320px] text-[13px] leading-[1.55] text-ink/55">
-                {fulfilment === "delivery"
-                  ? `We'll ride it to you around ${placedTime}.`
-                  : `It'll be ready at the window around ${placedTime}.`}{" "}
+                {when === "schedule" && scheduledAt
+                  ? fulfilment === "delivery"
+                    ? `We'll ride it to you ${placedTime}.`
+                    : `It'll be ready at the window ${placedTime}.`
+                  : fulfilment === "delivery"
+                    ? `We'll ride it to you around ${placedTime}.`
+                    : `It'll be ready at the window around ${placedTime}.`}{" "}
                 Total {formatNaira(placedTotal)}.
               </p>
 
@@ -325,10 +346,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   }
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[90] flex justify-end bg-ink/20 backdrop-blur-[2px]"
+    <>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex justify-end bg-ink/20 backdrop-blur-[2px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -416,9 +438,13 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                           />
                           <OptionCard
                             selected={when === "schedule"}
-                            onClick={() => setWhen("schedule")}
+                            onClick={() => setScheduleOpen(true)}
                             title="Schedule"
-                            detail="Pick a time"
+                            detail={
+                              when === "schedule" && scheduledAt
+                                ? scheduledAt.label
+                                : "Pick a time"
+                            }
                           />
                         </div>
                       </section>
@@ -580,9 +606,22 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                 )}
             </>
           </motion.aside>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <SchedulePicker
+        key={scheduleOpen ? scheduledAt?.label || "new" : "closed"}
+        open={scheduleOpen}
+        value={scheduledAt}
+        onClose={() => setScheduleOpen(false)}
+        onConfirm={(value) => {
+          setScheduledAt(value);
+          setWhen("schedule");
+          setScheduleOpen(false);
+        }}
+      />
+    </>
   );
 };
 
