@@ -10,6 +10,15 @@ import { formatNaira, useStore } from "../context/StoreContext";
 import { DELIVERY_FEE } from "../lib/delivery";
 import containerImg from "../assets/layers/container.png";
 
+const categories = [
+  "All",
+  "Rice & Pasta",
+  "Swallow & Soup",
+  "Grills",
+  "Sides",
+  "Drinks",
+];
+
 const SearchIcon = () => (
   <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" aria-hidden="true">
     <circle
@@ -53,6 +62,7 @@ const MenuPage = ({
 }) => {
   const { cart, addItem, removeItem } = useStore();
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
   const overlayOpen = bagOpen || Boolean(authMode);
 
   const filteredItems = useMemo(() => {
@@ -63,9 +73,11 @@ const MenuPage = ({
         `${item.name} ${item.description} ${item.category}`
           .toLowerCase()
           .includes(query);
-      return matchesQuery;
+      const matchesCategory =
+        category === "All" || item.category === category;
+      return matchesQuery && matchesCategory;
     });
-  }, [search]);
+  }, [search, category]);
 
   useEffect(() => {
     if (!overlayOpen) return undefined;
@@ -156,6 +168,31 @@ const MenuPage = ({
               <p className="hidden text-[12px] font-semibold text-ink/40 sm:block">
                 {filteredItems.length} {filteredItems.length === 1 ? "dish" : "dishes"}
               </p>
+            </div>
+
+            <div
+              role="group"
+              aria-label="Filter menu by category"
+              className="mb-5 flex flex-wrap items-center gap-2"
+            >
+              {categories.map((label) => {
+                const active = category === label;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setCategory(label)}
+                    aria-pressed={active}
+                    className={`rounded-full px-3.5 py-2 text-[12px] font-semibold transition-colors ${
+                      active
+                        ? "bg-tomato text-white shadow-[0_3px_0_#a5130c]"
+                        : "bg-cream-light text-ink/60 ring-1 ring-ink/10 hover:text-tomato"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
             {filteredItems.length > 0 ? (
