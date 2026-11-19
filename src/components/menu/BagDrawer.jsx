@@ -429,13 +429,14 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                           >
                             Delivery address
                           </label>
-                          <input
+                          <textarea
                             id="checkout-address"
                             value={address}
                             onChange={(event) => setAddress(event.target.value)}
                             placeholder="Enter your delivery address"
                             autoComplete="street-address"
-                            className="mt-2 h-11 w-full rounded-xl border border-ink/15 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors placeholder:text-ink/30 focus:border-tomato focus:ring-1 focus:ring-tomato"
+                            rows={3}
+                            className="mt-2 w-full resize-none rounded-xl border border-ink/15 bg-cream-light px-3.5 py-3 text-[13px] leading-[1.5] text-ink outline-none transition-colors placeholder:text-ink/30 focus:border-tomato focus:ring-1 focus:ring-tomato"
                           />
                         </section>
                       )}
