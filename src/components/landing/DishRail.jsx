@@ -4,9 +4,10 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { dishes } from "../../data/menu";
 import { Link } from "../../lib/router";
+import { useStore } from "../../context/StoreContext";
 import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 
 const DishRail = () => {
@@ -14,8 +15,20 @@ const DishRail = () => {
   const viewportRef = useRef(null);
   const trackRef = useRef(null);
   const [maxX, setMaxX] = useState(0);
+  const [toast, setToast] = useState(null);
+  const { user } = useStore();
 
   usePauseOffscreen(sectionRef);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = window.setTimeout(() => setToast(null), 5000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  const handleAdd = () => {
+    setToast({ type: user ? "menu" : "auth" });
+  };
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -128,6 +141,7 @@ const DishRail = () => {
                       </p>
                       <button
                         type="button"
+                        onClick={handleAdd}
                         aria-label={`Add ${dish.name} to your order`}
                         className="grid h-9 w-9 place-items-center rounded-full bg-tomato text-[19px] font-medium leading-none text-white shadow-[0_3px_0_#a5130c] transition-transform duration-200 hover:scale-105 active:translate-y-0.5"
                       >
@@ -149,6 +163,72 @@ const DishRail = () => {
           </Link>
         </div>
       </div>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.2, ease: [0.2, 0.75, 0.2, 1] }}
+            className="fixed inset-x-4 bottom-24 z-[75] mx-auto max-w-[420px] rounded-2xl bg-cream-light p-4 text-ink shadow-[0_18px_50px_rgba(0,0,0,0.3)] ring-1 ring-black/10 sm:bottom-6"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-tomato text-[16px] font-black text-white">
+                {toast.type === "auth" ? "!" : "→"}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-bold leading-[1.35]">
+                  {toast.type === "auth"
+                    ? "Log in or sign up to place your order."
+                    : "Open the full menu to add this dish."}
+                </p>
+                <p className="mt-1 text-[11.5px] leading-[1.4] text-ink/50">
+                  {toast.type === "auth"
+                    ? "Create an account or sign in, then add dishes to your bag."
+                    : "Every dish and its add button is on the full menu."}
+                </p>
+                {toast.type === "auth" ? (
+                  <div className="mt-3 flex gap-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setToast(null)}
+                      className="rounded-full bg-tomato px-4 py-2 text-[12px] font-bold text-white shadow-[0_3px_0_#a5130c]"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setToast(null)}
+                      className="rounded-full bg-ink px-4 py-2 text-[12px] font-bold text-cream"
+                    >
+                      Sign up
+                    </Link>
+                  </div>
+                ) : (
+                  <Link
+                    to="/menu"
+                    onClick={() => setToast(null)}
+                    className="mt-3 inline-flex rounded-full bg-ink px-4 py-2 text-[12px] font-bold text-cream"
+                  >
+                    Open menu
+                  </Link>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setToast(null)}
+                aria-label="Dismiss notification"
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-ink/45 transition-colors hover:bg-cream hover:text-ink"
+              >
+                ×
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
