@@ -3,6 +3,7 @@ import { ContainerMark } from "../SiteNav";
 import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
 
+
 const SearchIcon = () => (
   <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" aria-hidden="true">
     <circle
@@ -123,7 +124,7 @@ const MenuNav = ({ search, onSearchChange }) => {
                   onClick={() => {
                     logout();
                     setUserOpen(false);
-                    navigate("/");
+                    navigate("/login", { replace: true, scroll: false });
                   }}
                   className="w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
                 >
