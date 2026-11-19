@@ -128,10 +128,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   const [fulfilment, setFulfilment] = useState("delivery");
   const [when, setWhen] = useState("asap");
   const [payment, setPayment] = useState("online");
-  const [address, setAddress] = useState(
-    "14 Admiralty Way, Lekki Phase 1",
-  );
-  const [phone, setPhone] = useState(user?.phone || "0803 123 4567");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [placed, setPlaced] = useState(false);
   const [placedTotal, setPlacedTotal] = useState(0);
@@ -431,11 +429,14 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                           >
                             Delivery address
                           </label>
-                          <input
+                          <textarea
                             id="checkout-address"
                             value={address}
                             onChange={(event) => setAddress(event.target.value)}
-                            className="mt-2 h-11 w-full rounded-xl border border-ink/15 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                            placeholder="Enter your delivery address"
+                            autoComplete="street-address"
+                            rows={3}
+                            className="mt-2 w-full resize-none rounded-xl border border-ink/15 bg-cream-light px-3.5 py-3 text-[13px] leading-[1.5] text-ink outline-none transition-colors placeholder:text-ink/30 focus:border-tomato focus:ring-1 focus:ring-tomato"
                           />
                         </section>
                       )}
@@ -451,8 +452,10 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                           id="checkout-phone"
                           value={phone}
                           onChange={(event) => setPhone(event.target.value)}
+                          placeholder="Enter your phone number"
+                          autoComplete="tel"
                           inputMode="tel"
-                          className="mt-2 h-11 w-full rounded-xl border border-ink/15 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                          className="mt-2 h-11 w-full rounded-xl border border-ink/15 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors placeholder:text-ink/30 focus:border-tomato focus:ring-1 focus:ring-tomato"
                         />
                       </section>
 
