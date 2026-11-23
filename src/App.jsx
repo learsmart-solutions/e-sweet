@@ -18,8 +18,13 @@ const knownRoutes = new Set([
   "/settings",
 ]);
 
+// Settings owns everything under /settings (home and its section pages).
+const isSettingsRoute = (route) =>
+  route === "/settings" || route.startsWith("/settings/");
+
 const App = () => {
   const route = useRoute();
+  const settingsRoute = isSettingsRoute(route);
 
   return (
     <StoreProvider>
@@ -29,8 +34,10 @@ const App = () => {
       {route === "/checkout-auth" && <MenuPage authMode="signin" />}
       {route === "/signup" && <AuthPage mode="signup" />}
       {route === "/login" && <AuthPage mode="login" />}
-      {route === "/settings" && <Settings />}
-      {(route === "/" || !knownRoutes.has(route)) && <HomePage />}
+      {settingsRoute && <Settings route={route} />}
+      {(route === "/" || (!knownRoutes.has(route) && !settingsRoute)) && (
+        <HomePage />
+      )}
       <WhatsAppFab
         hidden={
           route === "/bag" ||
