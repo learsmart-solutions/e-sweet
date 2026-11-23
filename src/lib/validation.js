@@ -34,3 +34,16 @@ export const getConfirmPasswordError = (password, confirmation) => {
   if (password !== confirmation) return "Passwords do not match.";
   return "";
 };
+
+// Shows a Nigerian number the way customers write it: 0803 123 4567.
+// Numbers in any other shape are returned as they were entered.
+export const formatPhone = (value = "") => {
+  let digits = value.replace(/\D/g, "");
+  if (digits.length === 13 && digits.startsWith("234")) {
+    digits = `0${digits.slice(3)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
+  }
+  return value.trim();
+};

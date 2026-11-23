@@ -1,35 +1,138 @@
-import React from "react";
-import { Link } from "../lib/router";
+import React, { useCallback, useState } from "react";
+import { useStore } from "../context/StoreContext";
+import { formatPhone } from "../lib/validation";
+import ActiveOrderCard from "../components/settings/ActiveOrderCard";
+import SettingsDesktopNav from "../components/settings/SettingsDesktopNav";
+import SettingsSidebar from "../components/settings/SettingsSidebar";
+import SignedOutPrompt from "../components/settings/SignedOutPrompt";
+import SignOutDialog from "../components/settings/SignOutDialog";
+import {
+  BottomSignOutButton,
+  LegalInfo,
+  PhoneTopBar,
+  ProfileSummary,
+  SettingsGroup,
+  SignOutButton,
+} from "../components/settings/SettingsParts";
+import {
+  SETTINGS_PATH,
+  settingsGroups,
+  settingsItems,
+} from "../components/settings/sections";
 
-const Settings = () => (
-  <div className="min-h-svh bg-cream">
-    <header className="border-b border-ink/10 bg-cream-light">
-      <div className="mx-auto flex h-[68px] w-full max-w-[1312px] items-center justify-between px-4 sm:h-[76px] sm:px-8 lg:px-12">
-        <Link
-          to="/menu"
-          className="inline-flex items-center gap-2 text-[13px] font-bold text-ink/65 transition-colors hover:text-tomato"
-        >
-          <span aria-hidden="true">←</span>
-          Back to menu
-        </Link>
-        <span className="font-display text-[15px] font-black tracking-[-0.02em] text-ink">
-          Settings
-        </span>
-      </div>
-    </header>
-
-    <main className="mx-auto w-full max-w-[720px] px-4 py-12 sm:px-8 sm:py-16">
-      <p className="font-display text-[10px] font-bold uppercase tracking-[0.28em] text-tomato">
-        Your account
-      </p>
-      <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.4rem)] font-black leading-[0.95] tracking-[-0.055em] text-ink">
-        Settings
-      </h1>
-      <p className="mt-4 max-w-[520px] text-[14px] leading-[1.65] text-ink/55">
-        This page is coming soon.
-      </p>
-    </main>
+// Section pages (Profile, Saved addresses, …) are being built separately.
+// Until one lands, its route shows this panel inside the Settings shell.
+const ComingSoon = ({ label }) => (
+  <div className="w-full rounded-[20px] bg-cream-light p-6 text-[14px] leading-5 text-muted">
+    {label} is coming soon.
   </div>
 );
+
+const Settings = ({ route = SETTINGS_PATH }) => {
+  const { user, logout } = useStore();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const section = settingsItems.find((item) => item.to === route);
+  const isHome = !section;
+  const title = section?.label ?? "Settings";
+  const phone = user ? formatPhone(user.phone) : "";
+
+  // Stable so the dialog's focus and key handlers are not re-attached on
+  // every render.
+  const openConfirm = useCallback(() => setConfirmOpen(true), []);
+  const closeConfirm = useCallback(() => setConfirmOpen(false), []);
+
+  // Signing out leaves the visitor on this page, which then shows the
+  // signed-out prompt (the flow drawn in Figma). The bag is kept.
+  const signOut = () => {
+    setConfirmOpen(false);
+    logout();
+  };
+
+  // TODO: orders are not stored yet. Pass the in-progress order here once
+  // they are, and the red card will show.
+  const activeOrder = null;
+
+  const homeTop = user && (
+    <>
+      <ProfileSummary
+        name={user.name}
+        phone={phone}
+        editTo={`${SETTINGS_PATH}/profile`}
+      />
+      {activeOrder && (
+        <ActiveOrderCard
+          order={activeOrder}
+          trackTo={`${SETTINGS_PATH}/orders`}
+        />
+      )}
+    </>
+  );
+
+  return (
+    <div className="min-h-svh bg-cream">
+      {/* Phone and tablet */}
+      <div className="mx-auto w-full max-w-[520px] lg:hidden">
+        <PhoneTopBar
+          title={user ? title : "Settings"}
+          backTo={isHome || !user ? "/menu" : SETTINGS_PATH}
+          onSignOut={user && isHome ? openConfirm : undefined}
+        />
+        <main
+          className={`flex flex-col px-4 ${user ? "gap-5 pb-6 pt-2" : "py-6"}`}
+        >
+          {!user ? (
+            <SignedOutPrompt />
+          ) : isHome ? (
+            <>
+              {homeTop}
+              {settingsGroups.map((group) => (
+                <SettingsGroup key={group.title} {...group} />
+              ))}
+              <LegalInfo />
+              <BottomSignOutButton onClick={openConfirm} />
+            </>
+          ) : (
+            <ComingSoon label={section.label} />
+          )}
+        </main>
+      </div>
+
+      {/* Desktop */}
+      <div className="mx-auto hidden w-full max-w-[1440px] flex-col px-8 pb-10 pt-5 lg:flex xl:px-[130px]">
+        <SettingsDesktopNav user={user} onSignOut={openConfirm} />
+        {!user ? (
+          <main className="mt-[60px] flex justify-center">
+            <SignedOutPrompt />
+          </main>
+        ) : (
+          <div className="mt-7 flex items-start gap-8">
+            <SettingsSidebar
+              user={user}
+              phone={phone}
+              activeKey={section?.key}
+            />
+            <main className="flex min-w-0 flex-1 flex-col gap-5">
+              <header className="flex items-center gap-3">
+                <h1 className="min-w-0 flex-1 font-display text-[36px] font-extrabold tracking-[-0.03em] text-ink">
+                  {title}
+                </h1>
+                <SignOutButton onClick={openConfirm} size="lg" />
+              </header>
+              {isHome ? homeTop : <ComingSoon label={section.label} />}
+            </main>
+          </div>
+        )}
+      </div>
+
+      <SignOutDialog
+        open={confirmOpen && Boolean(user)}
+        email={user?.email}
+        onCancel={closeConfirm}
+        onConfirm={signOut}
+      />
+    </div>
+  );
+};
 
 export default Settings;
