@@ -191,9 +191,20 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
       navigate("/checkout-auth?next=checkout", { scroll: false });
       return;
     }
-    if (when === "schedule" && !scheduledAt) {
-      setScheduleOpen(true);
-      return;
+    if (when === "schedule") {
+      if (!scheduledAt) {
+        setScheduleOpen(true);
+        return;
+      }
+      const [hour, minute] = scheduledAt.time.split(":").map(Number);
+      const slotDate = new Date(scheduledAt.date);
+      slotDate.setHours(hour, minute, 0, 0);
+      const cutoff = new Date(Date.now() + 30 * 60 * 1000);
+      if (slotDate < cutoff) {
+        setScheduledAt(null);
+        setScheduleOpen(true);
+        return;
+      }
     }
     const ready = new Date(Date.now() + 20 * 60 * 1000);
     setPlacedTime(

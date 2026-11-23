@@ -74,18 +74,21 @@ const CloseIcon = () => (
 );
 
 const SchedulePicker = ({ open, value, onClose, onConfirm }) => {
-  const now = useMemo(() => new Date(), []);
+  const [now] = useState(() => new Date());
   const days = useMemo(() => buildDays(now), [now]);
-  const initialDate = useMemo(() => {
+  const [date, setDate] = useState(() => {
     if (value?.date && days.some((day) => sameDay(day, value.date))) {
       const savedSlots = availableSlotsForDay(value.date, now);
       if (savedSlots.includes(value.time)) return value.date;
     }
     return days[0] || now;
-  }, [days, now, value?.date, value?.time]);
-  const initialSlots = availableSlotsForDay(initialDate, now);
-  const [date, setDate] = useState(initialDate);
+  });
   const [time, setTime] = useState(() => {
+    const initialDate =
+      value?.date && days.some((day) => sameDay(day, value.date))
+        ? value.date
+        : days[0] || now;
+    const initialSlots = availableSlotsForDay(initialDate, now);
     if (value?.time && initialSlots.includes(value.time)) return value.time;
     return initialSlots[0] || "";
   });
