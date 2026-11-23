@@ -2,6 +2,14 @@ import React, { useState } from "react";
 import { ContainerMark } from "../components/SiteNav";
 import { Link, navigate } from "../lib/router";
 import { useStore } from "../context/StoreContext";
+import FormError from "../components/FormError";
+import {
+  getConfirmPasswordError,
+  getEmailError,
+  getPasswordError,
+  getPhoneError,
+  getNameError,
+} from "../lib/validation";
 import jollofImg from "../assets/menu/smoky-jollof.png";
 import yamImg from "../assets/menu/pounded-yam.png";
 import zoboImg from "../assets/menu/chilled-zobo.png";
@@ -32,6 +40,13 @@ const copy = {
   },
 };
 
+const inputClass = (hasError, extra = "") =>
+  `${extra} h-11 w-full rounded-xl border bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:ring-1 focus:ring-tomato ${
+    hasError
+      ? "border-tomato focus:border-tomato"
+      : "border-ink focus:border-tomato"
+  }`;
+
 const AuthPage = ({ mode = "signup" }) => {
   const isSignup = mode === "signup";
   const content = copy[mode];
@@ -43,28 +58,47 @@ const AuthPage = ({ mode = "signup" }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const clearError = (field) => {
+    setError("");
+    setErrors((current) => {
+      if (!current[field]) return current;
+      return { ...current, [field]: "" };
+    });
+  };
+
+  const validate = () => {
+    const nextErrors = {};
+
+    if (isSignup) {
+      const nameError = getNameError(name);
+      if (nameError) nextErrors.name = nameError;
+
+      const phoneError = getPhoneError(phone);
+      if (phoneError) nextErrors.phone = phoneError;
+
+      const confirmError = getConfirmPasswordError(password, confirmPassword);
+      if (confirmError) nextErrors.confirmPassword = confirmError;
+    }
+
+    const emailError = getEmailError(email);
+    if (emailError) nextErrors.email = emailError;
+
+    const passwordError = getPasswordError(password, isSignup);
+    if (passwordError) nextErrors.password = passwordError;
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     setError("");
 
+    if (!validate()) return;
+
     if (isSignup) {
-      if (!name.trim() || !email.trim() || !phone.trim() || !password) {
-        setError("Please fill in every field to create your account.");
-        return;
-      }
-      if (password.length < 6) {
-        setError("Use at least 6 characters for your password.");
-        return;
-      }
-      if (!confirmPassword) {
-        setError("Confirm your password to create your account.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
       signup({
         name: name.trim(),
         email: email.trim(),
@@ -75,13 +109,8 @@ const AuthPage = ({ mode = "signup" }) => {
       return;
     }
 
-    if (!email.trim() || !password) {
-      setError("Please enter your email and password.");
-      return;
-    }
-
     if (!login(email, password)) {
-      setError("That password is not right. Try again.");
+      setError("That email and password do not match. Try again.");
       return;
     }
 
@@ -186,11 +215,27 @@ const AuthPage = ({ mode = "signup" }) => {
                 </span>
                 <input
                   value={name}
-                  onChange={(event) => setName(event.target.value)}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                    clearError("name");
+                  }}
+                  onBlur={() => {
+                    const nameError = getNameError(name);
+                    if (nameError) {
+                      setErrors((current) => ({
+                        ...current,
+                        name: nameError,
+                      }));
+                    }
+                  }}
                   autoComplete="name"
                   placeholder="Ada Okafor"
-                  className="mt-2 h-11 w-full rounded-xl border border-ink bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                  required
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={errors.name ? "auth-name-error" : undefined}
+                  className={`mt-2 ${inputClass(Boolean(errors.name))}`}
                 />
+                <FormError id="auth-name-error">{errors.name}</FormError>
               </label>
             )}
 
@@ -199,11 +244,24 @@ const AuthPage = ({ mode = "signup" }) => {
               <input
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  clearError("email");
+                }}
+                onBlur={() => {
+                  const emailError = getEmailError(email);
+                  if (emailError) {
+                    setErrors((current) => ({ ...current, email: emailError }));
+                  }
+                }}
                 autoComplete="email"
                 placeholder="ada@example.com"
-                className="mt-2 h-11 w-full rounded-xl border border-ink bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                required
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? "auth-email-error" : undefined}
+                className={`mt-2 ${inputClass(Boolean(errors.email))}`}
               />
+              <FormError id="auth-email-error">{errors.email}</FormError>
             </label>
 
             {isSignup && (
@@ -212,11 +270,29 @@ const AuthPage = ({ mode = "signup" }) => {
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
+                  onChange={(event) => {
+                    setPhone(event.target.value);
+                    clearError("phone");
+                  }}
+                  onBlur={() => {
+                    const phoneError = getPhoneError(phone);
+                    if (phoneError) {
+                      setErrors((current) => ({
+                        ...current,
+                        phone: phoneError,
+                      }));
+                    }
+                  }}
                   autoComplete="tel"
                   placeholder="0803 123 4567"
-                  className="mt-2 h-11 w-full rounded-xl border border-ink bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                  required
+                  aria-invalid={Boolean(errors.phone)}
+                  aria-describedby={
+                    errors.phone ? "auth-phone-error" : undefined
+                  }
+                  className={`mt-2 ${inputClass(Boolean(errors.phone))}`}
                 />
+                <FormError id="auth-phone-error">{errors.phone}</FormError>
               </label>
             )}
 
@@ -226,14 +302,31 @@ const AuthPage = ({ mode = "signup" }) => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    clearError("password");
+                    clearError("confirmPassword");
+                  }}
+                  onBlur={() => {
+                    const passwordError = getPasswordError(password, isSignup);
+                    if (passwordError) {
+                      setErrors((current) => ({
+                        ...current,
+                        password: passwordError,
+                      }));
+                    }
+                  }}
                   autoComplete={isSignup ? "new-password" : "current-password"}
+                  required
+                  aria-invalid={Boolean(errors.password || error)}
+                  aria-describedby={
+                    errors.password ? "auth-password-error" : undefined
+                  }
                   placeholder="••••••••"
-                  className={`h-11 w-full rounded-xl border bg-cream-light px-3.5 pr-16 text-[13px] text-ink outline-none transition-colors focus:ring-1 ${
-                    error
-                      ? "border-tomato focus:border-tomato focus:ring-tomato"
-                      : "border-ink focus:border-tomato focus:ring-tomato"
-                  }`}
+                  className={inputClass(
+                    Boolean(errors.password || error),
+                    "pr-16",
+                  )}
                 />
                 <button
                   type="button"
@@ -243,6 +336,7 @@ const AuthPage = ({ mode = "signup" }) => {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </span>
+              <FormError id="auth-password-error">{errors.password}</FormError>
             </label>
 
             {isSignup && (
@@ -253,11 +347,36 @@ const AuthPage = ({ mode = "signup" }) => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    clearError("confirmPassword");
+                  }}
+                  onBlur={() => {
+                    const confirmError = getConfirmPasswordError(
+                      password,
+                      confirmPassword,
+                    );
+                    if (confirmError) {
+                      setErrors((current) => ({
+                        ...current,
+                        confirmPassword: confirmError,
+                      }));
+                    }
+                  }}
                   autoComplete="new-password"
                   placeholder="Repeat your password"
-                  className="mt-2 h-11 w-full rounded-xl border border-ink bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                  required
+                  aria-invalid={Boolean(errors.confirmPassword)}
+                  aria-describedby={
+                    errors.confirmPassword
+                      ? "auth-confirm-password-error"
+                      : undefined
+                  }
+                  className={`mt-2 ${inputClass(Boolean(errors.confirmPassword))}`}
                 />
+                <FormError id="auth-confirm-password-error">
+                  {errors.confirmPassword}
+                </FormError>
               </label>
             )}
 
