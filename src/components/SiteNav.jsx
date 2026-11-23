@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "../lib/router";
 
@@ -27,6 +27,9 @@ export const ContainerMark = () => (
 
 const SiteNav = ({ visible }) => {
   const [open, setOpen] = useState(false);
+  const hamburgerRef = useRef(null);
+  const closeRef = useRef(null);
+  const panelRef = useRef(null);
 
   useEffect(() => {
     if (!visible) setOpen(false);
@@ -35,14 +38,50 @@ const SiteNav = ({ visible }) => {
   useEffect(() => {
     if (!open) return undefined;
     const prevOverflow = document.body.style.overflow;
+    const hamburgerEl = hamburgerRef.current;
     document.body.style.overflow = "hidden";
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") setOpen(false);
+
+    const timer = requestAnimationFrame(() => {
+      closeRef.current?.focus();
+    });
+
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const onMediaChange = (event) => {
+      if (event.matches) setOpen(false);
     };
+    mediaQuery.addEventListener?.("change", onMediaChange);
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (event.key === "Tab" && panelRef.current) {
+        const focusable = panelRef.current.querySelectorAll(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
     window.addEventListener("keydown", onKeyDown);
+
     return () => {
+      cancelAnimationFrame(timer);
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      mediaQuery.removeEventListener?.("change", onMediaChange);
+      hamburgerEl?.focus();
     };
   }, [open]);
 
@@ -103,6 +142,7 @@ const SiteNav = ({ visible }) => {
             </div>
 
             <button
+              ref={hamburgerRef}
               type="button"
               onClick={() => setOpen(true)}
               aria-expanded={open}
@@ -127,6 +167,7 @@ const SiteNav = ({ visible }) => {
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={panelRef}
             id="mobile-nav-panel"
             role="dialog"
             aria-modal="true"
@@ -172,6 +213,7 @@ const SiteNav = ({ visible }) => {
               </a>
 
               <button
+                ref={closeRef}
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
@@ -234,10 +276,6 @@ const SiteNav = ({ visible }) => {
                     Sign up
                   </Link>
                 </div>
-
-                <p className="mt-6 text-center text-[12px] font-medium text-ink/45">
-                  Fresh Nigerian street food · Open daily 11am – 9pm
-                </p>
               </div>
             </div>
           </motion.div>
