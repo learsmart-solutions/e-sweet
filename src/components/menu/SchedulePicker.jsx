@@ -10,17 +10,32 @@ for (let hour = 11; hour <= 20; hour += 1) {
   }
 }
 
-const buildDays = () => {
-  const today = new Date();
+const PREP_MINUTES = 30;
+
+const slotToDate = (day, slot) => {
+  const [hour, minute] = slot.split(":").map(Number);
+  const date = new Date(day);
+  date.setHours(hour, minute, 0, 0);
+  return date;
+};
+
+const availableSlotsForDay = (day, now) => {
+  const cutoff = new Date(now.getTime() + PREP_MINUTES * 60 * 1000);
+  return TIME_SLOTS.filter((slot) => slotToDate(day, slot) >= cutoff);
+};
+
+const buildDays = (now) => {
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
     date.setDate(today.getDate() + index);
     return date;
-  });
+  }).filter((date) => availableSlotsForDay(date, now).length > 0);
 };
 
-const sameDay = (left, right) =>
-  left.toDateString() === right.toDateString();
+const sameDay = (left, right) => left.toDateString() === right.toDateString();
 
 const formatDay = (date) => {
   const today = new Date();
@@ -59,9 +74,31 @@ const CloseIcon = () => (
 );
 
 const SchedulePicker = ({ open, value, onClose, onConfirm }) => {
-  const days = useMemo(() => buildDays(), []);
-  const [date, setDate] = useState(() => value?.date || days[0]);
-  const [time, setTime] = useState(() => value?.time || TIME_SLOTS[0]);
+  const now = useMemo(() => new Date(), []);
+  const days = useMemo(() => buildDays(now), [now]);
+  const initialDate = useMemo(() => {
+    if (value?.date && days.some((day) => sameDay(day, value.date))) {
+      const savedSlots = availableSlotsForDay(value.date, now);
+      if (savedSlots.includes(value.time)) return value.date;
+    }
+    return days[0] || now;
+  }, [days, now, value?.date, value?.time]);
+  const initialSlots = availableSlotsForDay(initialDate, now);
+  const [date, setDate] = useState(initialDate);
+  const [time, setTime] = useState(() => {
+    if (value?.time && initialSlots.includes(value.time)) return value.time;
+    return initialSlots[0] || "";
+  });
+
+  const slots = availableSlotsForDay(date, now);
+
+  const selectDay = (day) => {
+    const nextSlots = availableSlotsForDay(day, now);
+    setDate(day);
+    setTime((current) =>
+      nextSlots.includes(current) ? current : nextSlots[0] || "",
+    );
+  };
 
   return (
     <AnimatePresence>
@@ -115,7 +152,7 @@ const SchedulePicker = ({ open, value, onClose, onConfirm }) => {
                   <button
                     key={day.toISOString()}
                     type="button"
-                    onClick={() => setDate(day)}
+                    onClick={() => selectDay(day)}
                     aria-pressed={active}
                     className={`rounded-xl border px-2 py-2.5 text-[11px] font-bold transition-colors ${
                       active
@@ -131,7 +168,7 @@ const SchedulePicker = ({ open, value, onClose, onConfirm }) => {
 
             <p className="mt-5 text-[12px] font-bold text-ink">Choose a time</p>
             <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {TIME_SLOTS.map((slot) => {
+              {slots.map((slot) => {
                 const active = time === slot;
                 return (
                   <button
@@ -153,17 +190,29 @@ const SchedulePicker = ({ open, value, onClose, onConfirm }) => {
 
             <button
               type="button"
+              disabled={!time}
               onClick={() => {
+                if (!time) return;
                 const day = formatDay(date);
                 const timeLabel = formatTime(time);
+                const sentenceDay =
+                  day === "Today"
+                    ? "today"
+                    : day === "Tomorrow"
+                      ? "tomorrow"
+                      : `on ${day}`;
                 onConfirm({
                   date,
                   time,
                   label: `${day} · ${timeLabel}`,
-                  sentence: `${day.toLowerCase()} at ${timeLabel}`,
+                  sentence: `${sentenceDay} at ${timeLabel}`,
                 });
               }}
-              className="mt-5 w-full rounded-xl bg-tomato px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_0_#a5130c,0_10px_20px_rgba(180,30,20,0.16)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
+              className={`mt-5 w-full rounded-xl px-5 py-3.5 text-[14px] font-bold text-white transition-transform duration-200 ${
+                time
+                  ? "bg-tomato shadow-[0_4px_0_#a5130c,0_10px_20px_rgba(180,30,20,0.16)] hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
+                  : "cursor-not-allowed bg-ink/25"
+              }`}
             >
               Confirm time
             </button>

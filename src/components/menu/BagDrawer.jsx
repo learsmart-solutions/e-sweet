@@ -3,10 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
 import WhatsAppIcon from "../WhatsAppIcon";
-import {
-  WHATSAPP_CONTACT_LABEL,
-  whatsappLink,
-} from "../../lib/whatsapp";
+import { WHATSAPP_CONTACT_LABEL, whatsappLink } from "../../lib/whatsapp";
 import { DELIVERY_FEE } from "../../lib/delivery";
 import SchedulePicker from "./SchedulePicker";
 
@@ -108,7 +105,13 @@ const SummaryLine = ({ label, value, strong = false }) => (
     }`}
   >
     <span className={strong ? "text-[14px] font-bold" : ""}>{label}</span>
-    <span className={strong ? "font-display text-[20px] font-black" : "font-semibold text-ink"}>
+    <span
+      className={
+        strong
+          ? "font-display text-[20px] font-black"
+          : "font-semibold text-ink"
+      }
+    >
       {value}
     </span>
   </div>
@@ -131,9 +134,7 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   const [scheduledAt, setScheduledAt] = useState(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [payment, setPayment] = useState("online");
-  const [address, setAddress] = useState(
-    "14 Admiralty Way, Lekki Phase 1",
-  );
+  const [address, setAddress] = useState("14 Admiralty Way, Lekki Phase 1");
   const [phone, setPhone] = useState(user?.phone || "0803 123 4567");
   const [note, setNote] = useState("");
   const [placed, setPlaced] = useState(false);
@@ -143,7 +144,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
 
   const isCheckout = step === "checkout";
   const orderTotal = subtotal + packs;
-  const deliveryFee = isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
+  const deliveryFee =
+    isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
   const total = orderTotal + deliveryFee;
   const orderWhatsAppHref = orderCode
     ? whatsappLink(
@@ -294,7 +296,10 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
 
               <div className="mt-5 flex items-start">
                 {["Received", "Cooking", "On the way"].map((label, index) => (
-                  <div key={label} className="flex flex-1 flex-col items-center">
+                  <div
+                    key={label}
+                    className="flex flex-1 flex-col items-center"
+                  >
                     <div className="flex w-full items-center">
                       <span
                         className={`h-0.5 flex-1 ${
@@ -351,51 +356,51 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
         {open && (
           <motion.div
             className="fixed inset-0 z-[90] flex justify-end bg-ink/20 backdrop-blur-[2px]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
-          onClick={onClose}
-        >
-          <motion.aside
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="bag-title"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 330, damping: 34 }}
-            onClick={(event) => event.stopPropagation()}
-            className="flex h-svh w-full max-w-[440px] flex-col bg-cream-light shadow-[-18px_0_60px_rgba(30,20,10,0.16)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={onClose}
           >
-            <div className="flex h-[68px] shrink-0 items-center gap-3 border-b border-ink/10 px-4 sm:h-[76px] sm:px-5">
-              {isCheckout && (
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="bag-title"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 330, damping: 34 }}
+              onClick={(event) => event.stopPropagation()}
+              className="flex h-svh w-full max-w-[440px] flex-col bg-cream-light shadow-[-18px_0_60px_rgba(30,20,10,0.16)]"
+            >
+              <div className="flex h-[68px] shrink-0 items-center gap-3 border-b border-ink/10 px-4 sm:h-[76px] sm:px-5">
+                {isCheckout && (
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    aria-label="Back to your order"
+                    className="grid h-9 w-9 place-items-center rounded-full text-ink/65 transition-colors hover:bg-cream hover:text-ink"
+                  >
+                    <ArrowLeft />
+                  </button>
+                )}
+                <h2
+                  id="bag-title"
+                  className="font-display text-[21px] font-black tracking-[-0.035em] text-ink"
+                >
+                  {isCheckout ? "Checkout" : "Your order"}
+                </h2>
                 <button
                   type="button"
-                  onClick={goBack}
-                  aria-label="Back to your order"
-                  className="grid h-9 w-9 place-items-center rounded-full text-ink/65 transition-colors hover:bg-cream hover:text-ink"
+                  onClick={onClose}
+                  aria-label="Close bag"
+                  className="ml-auto grid h-9 w-9 place-items-center rounded-full border border-ink/15 text-ink/65 transition-colors hover:bg-cream hover:text-ink"
                 >
-                  <ArrowLeft />
+                  <CloseIcon />
                 </button>
-              )}
-              <h2
-                id="bag-title"
-                className="font-display text-[21px] font-black tracking-[-0.035em] text-ink"
-              >
-                {isCheckout ? "Checkout" : "Your order"}
-              </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close bag"
-                className="ml-auto grid h-9 w-9 place-items-center rounded-full border border-ink/15 text-ink/65 transition-colors hover:bg-cream hover:text-ink"
-              >
-                <CloseIcon />
-              </button>
-            </div>
+              </div>
 
-            <>
+              <>
                 <div className="flex-1 overflow-y-auto px-5 py-5">
                   {cartCount === 0 ? (
                     emptyState
@@ -581,7 +586,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                       {isCheckout && (
                         <SummaryLine
                           label="Delivery"
-                          value={deliveryFee === 0 ? "Free" : formatNaira(deliveryFee)}
+                          value={
+                            deliveryFee === 0
+                              ? "Free"
+                              : formatNaira(deliveryFee)
+                          }
                         />
                       )}
                       <div className="mt-2 border-t border-dashed border-ink/15 pt-2.5">
@@ -604,8 +613,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                     </button>
                   </div>
                 )}
-            </>
-          </motion.aside>
+              </>
+            </motion.aside>
           </motion.div>
         )}
       </AnimatePresence>
