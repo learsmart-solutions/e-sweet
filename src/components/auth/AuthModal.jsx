@@ -23,6 +23,7 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,6 +31,7 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
 
   useEffect(() => {
     setMode(initialMode);
+    setConfirmPassword("");
     setError("");
   }, [initialMode]);
 
@@ -43,6 +45,7 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
 
   const switchMode = () => {
     setMode((current) => (current === "signup" ? "signin" : "signup"));
+    setConfirmPassword("");
     setError("");
   };
 
@@ -62,6 +65,14 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
       }
       if (password.length < 6) {
         setError("Use at least 6 characters for your password.");
+        return;
+      }
+      if (!confirmPassword) {
+        setError("Confirm your password to create your account.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
         return;
       }
       signup({
@@ -136,6 +147,7 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
               type="button"
               onClick={() => {
                 setMode("signin");
+                setConfirmPassword("");
                 setError("");
               }}
               aria-pressed={!isSignup}
@@ -151,6 +163,7 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
               type="button"
               onClick={() => {
                 setMode("signup");
+                setConfirmPassword("");
                 setError("");
               }}
               aria-pressed={isSignup}
@@ -167,7 +180,9 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
           <form onSubmit={handleSubmit} noValidate className="mt-5">
             {isSignup && (
               <label className="mb-4 block">
-                <span className="text-[12px] font-bold text-ink">Full name</span>
+                <span className="text-[12px] font-bold text-ink">
+                  Full name
+                </span>
                 <input
                   value={name}
                   onChange={(event) => setName(event.target.value)}
@@ -228,6 +243,22 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                 </button>
               </span>
             </label>
+
+            {isSignup && (
+              <label className="mt-4 block">
+                <span className="text-[12px] font-bold text-ink">
+                  Confirm password
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  autoComplete="new-password"
+                  placeholder="Repeat your password"
+                  className="mt-2 h-11 w-full rounded-xl border border-ink/60 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                />
+              </label>
+            )}
 
             {error && (
               <p

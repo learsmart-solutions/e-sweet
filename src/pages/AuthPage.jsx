@@ -13,8 +13,7 @@ const copy = {
       "Create an account once, then order jollof, suya and soups for pickup or delivery in a few taps.",
     notice: "Sign up to see the menu and start ordering.",
     title: "Create your account",
-    subtitle:
-      "New here? Sign up to see the menu and place your first order.",
+    subtitle: "New here? Sign up to see the menu and place your first order.",
     button: "Create account",
     switchPrompt: "Already have an account?",
     switchAction: "Log in",
@@ -22,8 +21,7 @@ const copy = {
   },
   login: {
     eyebrow: "Good to see you again.",
-    intro:
-      "Log in and your usual is one tap away. The kitchen is warming up.",
+    intro: "Log in and your usual is one tap away. The kitchen is warming up.",
     notice: "Please log in before you order.",
     title: "Welcome back",
     subtitle: "Log in to your e'sweet account to see the menu and order.",
@@ -42,6 +40,7 @@ const AuthPage = ({ mode = "signup" }) => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,7 +57,20 @@ const AuthPage = ({ mode = "signup" }) => {
         setError("Use at least 6 characters for your password.");
         return;
       }
-      signup({ name: name.trim(), email: email.trim(), phone: phone.trim(), password });
+      if (!confirmPassword) {
+        setError("Confirm your password to create your account.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+      signup({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        password,
+      });
       navigate("/menu");
       return;
     }
@@ -169,7 +181,9 @@ const AuthPage = ({ mode = "signup" }) => {
           <form onSubmit={handleSubmit} noValidate className="mt-7">
             {isSignup && (
               <label className="mb-4 block">
-                <span className="text-[12px] font-bold text-ink">Full name</span>
+                <span className="text-[12px] font-bold text-ink">
+                  Full name
+                </span>
                 <input
                   value={name}
                   onChange={(event) => setName(event.target.value)}
@@ -231,8 +245,27 @@ const AuthPage = ({ mode = "signup" }) => {
               </span>
             </label>
 
+            {isSignup && (
+              <label className="mt-4 block">
+                <span className="text-[12px] font-bold text-ink">
+                  Confirm password
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  autoComplete="new-password"
+                  placeholder="Repeat your password"
+                  className="mt-2 h-11 w-full rounded-xl border border-ink bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                />
+              </label>
+            )}
+
             {error && (
-              <p aria-live="polite" className="mt-2 text-[12px] font-semibold text-tomato">
+              <p
+                aria-live="polite"
+                className="mt-2 text-[12px] font-semibold text-tomato"
+              >
                 {error}
               </p>
             )}
