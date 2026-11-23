@@ -7,6 +7,7 @@ import logoutDialogIconLg from "../../assets/icons/settings/logout-dialog-26.svg
 // "Sign out of e'sweet?" confirm. Phone stacks the buttons with Sign out on
 // top; desktop puts them side by side with Sign out on the right.
 const SignOutDialog = ({ open, email, onCancel, onConfirm }) => {
+  const dialogRef = useRef(null);
   const stayRef = useRef(null);
 
   useEffect(() => {
@@ -19,14 +20,38 @@ const SignOutDialog = ({ open, email, onCancel, onConfirm }) => {
     stayRef.current?.focus();
 
     const onKeyDown = (event) => {
-      if (event.key === "Escape") onCancel();
+      if (event.key === "Escape") {
+        onCancel();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      // aria-modal promises the page behind is out of reach, so keep Tab
+      // cycling between the dialog's buttons.
+      const buttons = dialogRef.current?.querySelectorAll("button");
+      if (!buttons?.length) return;
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      const active = document.activeElement;
+      if (!dialogRef.current.contains(active)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
 
     return () => {
       document.body.style.overflow = overflow;
       window.removeEventListener("keydown", onKeyDown);
-      previouslyFocused?.focus?.();
+      // After signing out, the button that opened the dialog has gone (the
+      // page swaps to the signed-out prompt, which takes focus itself).
+      if (previouslyFocused?.isConnected) previouslyFocused.focus?.();
     };
   }, [open, onCancel]);
 
@@ -42,6 +67,7 @@ const SignOutDialog = ({ open, email, onCancel, onConfirm }) => {
           onClick={onCancel}
         >
           <motion.div
+            ref={dialogRef}
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="sign-out-title"

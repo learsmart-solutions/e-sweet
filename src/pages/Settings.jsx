@@ -31,6 +31,7 @@ const ComingSoon = ({ label }) => (
 const Settings = ({ route = SETTINGS_PATH }) => {
   const { user, logout } = useStore();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [justSignedOut, setJustSignedOut] = useState(false);
 
   const section = settingsItems.find((item) => item.to === route);
   const isHome = !section;
@@ -46,6 +47,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
   // signed-out prompt (the flow drawn in Figma). The bag is kept.
   const signOut = () => {
     setConfirmOpen(false);
+    setJustSignedOut(true);
     logout();
   };
 
@@ -82,7 +84,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
           className={`flex flex-col px-4 ${user ? "gap-5 pb-6 pt-2" : "py-6"}`}
         >
           {!user ? (
-            <SignedOutPrompt />
+            <SignedOutPrompt focusOnMount={justSignedOut} />
           ) : isHome ? (
             <>
               {homeTop}
@@ -103,7 +105,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
         <SettingsDesktopNav user={user} onSignOut={openConfirm} />
         {!user ? (
           <main className="mt-[60px] flex justify-center">
-            <SignedOutPrompt />
+            <SignedOutPrompt focusOnMount={justSignedOut} />
           </main>
         ) : (
           <div className="mt-7 flex items-start gap-8">

@@ -22,6 +22,7 @@ const linkClass =
 const SettingsDesktopNav = ({ user, onSignOut }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
   const firstName = user?.name?.trim().split(/\s+/)[0] || "";
 
   useEffect(() => {
@@ -51,7 +52,7 @@ const SettingsDesktopNav = ({ user, onSignOut }) => {
     >
       <Link
         to="/"
-        className="flex items-center gap-2.5"
+        className="flex shrink-0 items-center gap-2.5"
         aria-label="e'sweet home"
       >
         <ContainerMark />
@@ -60,7 +61,10 @@ const SettingsDesktopNav = ({ user, onSignOut }) => {
         </span>
       </Link>
 
-      <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-[30px]">
+      {/* Below 1440px (the Figma frame width) there isn't room to centre the
+          links on the nav without hitting the account button, so they centre
+          in the space between the logo and the buttons instead. */}
+      <div className="flex flex-1 items-center justify-center gap-5 xl:gap-[30px] min-[1440px]:absolute min-[1440px]:left-1/2 min-[1440px]:-translate-x-1/2">
         {links.map((link) =>
           link.to ? (
             <Link key={link.label} to={link.to} className={linkClass}>
@@ -74,11 +78,12 @@ const SettingsDesktopNav = ({ user, onSignOut }) => {
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         {user ? (
           <>
             <div ref={menuRef} className="relative">
               <button
+                ref={menuButtonRef}
                 type="button"
                 onClick={() => setMenuOpen((value) => !value)}
                 aria-expanded={menuOpen}
@@ -91,7 +96,7 @@ const SettingsDesktopNav = ({ user, onSignOut }) => {
                 >
                   {getInitial(user.name)}
                 </span>
-                {firstName}
+                <span className="max-w-[120px] truncate">{firstName}</span>
                 <img src={chevronDownIcon} alt="" width="12" height="12" />
               </button>
 
@@ -114,6 +119,9 @@ const SettingsDesktopNav = ({ user, onSignOut }) => {
                     role="menuitem"
                     onClick={() => {
                       setMenuOpen(false);
+                      // This item unmounts with the menu, so park focus on
+                      // the account button for the dialog to return to.
+                      menuButtonRef.current?.focus();
                       onSignOut();
                     }}
                     className="w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
