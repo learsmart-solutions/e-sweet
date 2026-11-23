@@ -127,7 +127,6 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   } = useStore();
   const [fulfilment, setFulfilment] = useState("delivery");
   const [when, setWhen] = useState("asap");
-  const [payment, setPayment] = useState("online");
   const [address, setAddress] = useState(
     "14 Admiralty Way, Lekki Phase 1",
   );
@@ -460,18 +459,17 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                         <h3 className="text-[12px] font-bold text-ink">
                           Payment
                         </h3>
-                        <div className="mt-2 space-y-2.5">
-                          <OptionCard
-                            selected={payment === "online"}
-                            onClick={() => setPayment("online")}
-                            title="Pay online"
-                            detail="Card, transfer or USSD"
-                            radio
-                          />
-                          <p className="px-1 text-[11px] leading-[1.45] text-ink/45">
-                            Payment on delivery is not available.
+                        <div className="mt-2 rounded-xl border border-ink/15 bg-cream-light px-3.5 py-3">
+                          <p className="text-[13px] font-bold text-ink">
+                            Pay online
+                          </p>
+                          <p className="mt-0.5 text-[11px] font-medium text-ink/50">
+                            Card, transfer or USSD
                           </p>
                         </div>
+                        <p className="mt-2 px-1 text-[11px] leading-[1.45] text-ink/45">
+                          Payment on delivery is not available.
+                        </p>
                       </section>
                     </div>
                   ) : (

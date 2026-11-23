@@ -27,6 +27,6 @@
   {
     "id": "payment",
     "question": "How do I pay?",
-    "answer": "Pay online by card, transfer or USSD, or choose pay on delivery. Your order is confirmed once payment is received or the kitchen accepts the order."
+    "answer": "Pay online by card, transfer or USSD at checkout. Payment on delivery isn't available at the moment. Your order is confirmed once payment is received or the kitchen accepts the order."
   }
 ]
