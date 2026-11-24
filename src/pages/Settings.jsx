@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useStore } from "../context/StoreContext";
 import { formatPhone } from "../lib/validation";
 import ActiveOrderCard from "../components/settings/ActiveOrderCard";
@@ -6,6 +6,9 @@ import SettingsDesktopNav from "../components/settings/SettingsDesktopNav";
 import SettingsSidebar from "../components/settings/SettingsSidebar";
 import SignedOutPrompt from "../components/settings/SignedOutPrompt";
 import SignOutDialog from "../components/settings/SignOutDialog";
+import SavedAddresses, {
+  PlusIcon,
+} from "../components/settings/SavedAddresses";
 import {
   BottomSignOutButton,
   LegalInfo,
@@ -29,12 +32,14 @@ const ComingSoon = ({ label }) => (
 );
 
 const Settings = ({ route = SETTINGS_PATH }) => {
-  const { user, logout } = useStore();
+  const { user, logout, addresses = [] } = useStore();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [justSignedOut, setJustSignedOut] = useState(false);
+  const addModalRef = useRef(null);
 
   const section = settingsItems.find((item) => item.to === route);
   const isHome = !section;
+  const isAddresses = route === `${SETTINGS_PATH}/addresses`;
   const title = section?.label ?? "Settings";
   const phone = user ? formatPhone(user.phone) : "";
 
@@ -79,6 +84,18 @@ const Settings = ({ route = SETTINGS_PATH }) => {
           title={user ? title : "Settings"}
           backTo={isHome || !user ? "/menu" : SETTINGS_PATH}
           onSignOut={user && isHome ? openConfirm : undefined}
+          rightAction={
+            isAddresses && addresses.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => addModalRef.current?.()}
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ink px-3 py-1.5 text-[13px] font-bold text-cream transition-transform active:scale-95"
+              >
+                <PlusIcon size={14} />
+                Add
+              </button>
+            ) : undefined
+          }
         />
         <main
           className={`flex flex-col px-4 ${user ? "gap-5 pb-6 pt-2" : "py-6"}`}
@@ -94,6 +111,8 @@ const Settings = ({ route = SETTINGS_PATH }) => {
               <LegalInfo />
               <BottomSignOutButton onClick={openConfirm} />
             </>
+          ) : isAddresses ? (
+            <SavedAddresses openModalRef={addModalRef} />
           ) : (
             <ComingSoon label={section.label} />
           )}
@@ -119,9 +138,25 @@ const Settings = ({ route = SETTINGS_PATH }) => {
                 <h1 className="min-w-0 flex-1 font-display text-[36px] font-extrabold tracking-[-0.03em] text-ink">
                   {title}
                 </h1>
+                {isAddresses && addresses.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => addModalRef.current?.()}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 py-2.5 text-[14px] font-bold text-cream transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <PlusIcon size={16} />
+                    Add address
+                  </button>
+                )}
                 <SignOutButton onClick={openConfirm} size="lg" />
               </header>
-              {isHome ? homeTop : <ComingSoon label={section.label} />}
+              {isHome ? (
+                homeTop
+              ) : isAddresses ? (
+                <SavedAddresses openModalRef={addModalRef} />
+              ) : (
+                <ComingSoon label={section.label} />
+              )}
             </main>
           </div>
         )}
