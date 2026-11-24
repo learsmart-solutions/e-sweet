@@ -265,8 +265,11 @@ const Hero = ({ onNavChange }) => {
     -24 * range(p, 0.02, 0.1),
   );
 
+  // Frame one (z-index 10) fades in over 0.08–0.18 on top of the scene, so
+  // the scene stays fully visible underneath until the frame has landed and
+  // only then clears. Fading both at once let the dark backdrop show through.
   const cameraOpacity = useTransform(scrollYProgress, (p) =>
-    1 - range(p, 0.03, 0.12),
+    1 - range(p, 0.17, 0.2),
   );
   const cameraVisibility = useHiddenWhenClear(cameraOpacity);
 
@@ -303,8 +306,10 @@ const Hero = ({ onNavChange }) => {
   // Phone storyboard: the supplied 375×812 frames are already the close-up
   // crops, so the phone timeline cross-fades them instead of zooming the
   // desktop artboard.
+  // Same idea as the desktop scene: hold the base until frame one (in over
+  // 0.08–0.16) covers it, then clear it.
   const mobileBaseOpacity = useTransform(scrollYProgress, (p) =>
-    1 - range(p, 0.03, 0.1),
+    1 - range(p, 0.15, 0.18),
   );
   const mobileBaseScale = useTransform(scrollYProgress, (p) =>
     1 + 0.03 * range(p, 0, 0.1),
