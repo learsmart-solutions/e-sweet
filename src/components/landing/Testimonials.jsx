@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import Reveal from "./Reveal";
 import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 
@@ -23,18 +24,39 @@ const testimonials = [
 const Testimonials = () => {
   const sectionRef = useRef(null);
   usePauseOffscreen(sectionRef);
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section ref={sectionRef} className="overflow-hidden bg-tomato px-5 py-20 text-cream sm:px-8 md:py-28 lg:px-16">
+    <section
+      ref={sectionRef}
+      className="overflow-hidden bg-tomato px-5 py-20 text-cream sm:px-8 md:py-28 lg:px-16"
+    >
       <div className="mx-auto w-full max-w-[1312px]">
-        <Reveal className="text-center">
-          <p className="font-display text-[10px] font-bold uppercase tracking-[0.32em] text-gold sm:text-[11px]">
+        <div className="text-center">
+          <motion.p
+            className="font-display text-[10px] font-bold uppercase tracking-[0.32em] text-gold sm:text-[11px]"
+            initial={
+              reduceMotion ? false : { opacity: 0, rotateX: -92, y: -14 }
+            }
+            whileInView={
+              reduceMotion ? undefined : { opacity: 1, rotateX: 0, y: 0 }
+            }
+            viewport={{ once: true, amount: 0.9 }}
+            transition={{ duration: 0.72, ease: [0.22, 0.85, 0.2, 1] }}
+            style={{
+              transformOrigin: "top center",
+              transformPerspective: 800,
+              backfaceVisibility: "hidden",
+            }}
+          >
             Word on the street
-          </p>
-          <h2 className="mt-4 font-display text-[clamp(2.4rem,5.2vw,4.6rem)] font-black leading-[0.92] tracking-[-0.05em] text-cream">
-            People queue for this box.
-          </h2>
-        </Reveal>
+          </motion.p>
+          <Reveal delay={0.12}>
+            <h2 className="mt-4 font-display text-[clamp(2.4rem,5.2vw,4.6rem)] font-black leading-[0.92] tracking-[-0.05em] text-cream">
+              People queue for this box.
+            </h2>
+          </Reveal>
+        </div>
 
         <div className="mt-12 grid gap-6 sm:mt-14 lg:grid-cols-3 lg:gap-6">
           {testimonials.map((testimonial, index) => (
@@ -57,9 +79,7 @@ const Testimonials = () => {
                     "--float-tilt": `${index % 2 === 0 ? 0.6 : -0.6}deg`,
                   }}
                 >
-                  <figure
-                    className="testimonial-card h-full bg-cream p-7 text-ink shadow-[0_22px_45px_rgba(90,10,5,0.24)] transition-transform duration-300 hover:scale-[1.015] sm:p-8"
-                  >
+                  <figure className="testimonial-card h-full bg-cream p-7 text-ink shadow-[0_22px_45px_rgba(90,10,5,0.24)] transition-transform duration-300 hover:scale-[1.015] sm:p-8">
                     <div
                       aria-label="5 out of 5 stars"
                       className="flex items-center gap-1 text-[15px] leading-none text-gold"
