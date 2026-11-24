@@ -3,11 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
 import WhatsAppIcon from "../WhatsAppIcon";
-import {
-  WHATSAPP_CONTACT_LABEL,
-  whatsappLink,
-} from "../../lib/whatsapp";
+import { WHATSAPP_CONTACT_LABEL, whatsappLink } from "../../lib/whatsapp";
 import { DELIVERY_FEE } from "../../lib/delivery";
+import SchedulePicker from "./SchedulePicker";
 
 const ArrowLeft = () => (
   <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" aria-hidden="true">
@@ -107,7 +105,13 @@ const SummaryLine = ({ label, value, strong = false }) => (
     }`}
   >
     <span className={strong ? "text-[14px] font-bold" : ""}>{label}</span>
-    <span className={strong ? "font-display text-[20px] font-black" : "font-semibold text-ink"}>
+    <span
+      className={
+        strong
+          ? "font-display text-[20px] font-black"
+          : "font-semibold text-ink"
+      }
+    >
       {value}
     </span>
   </div>
@@ -127,6 +131,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   } = useStore();
   const [fulfilment, setFulfilment] = useState("delivery");
   const [when, setWhen] = useState("asap");
+  const [scheduledAt, setScheduledAt] = useState(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState(user?.phone || "");
   const [note, setNote] = useState("");
@@ -138,7 +144,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
 
   const isCheckout = step === "checkout";
   const orderTotal = subtotal + packs;
-  const deliveryFee = isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
+  const deliveryFee =
+    isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
   const total = orderTotal + deliveryFee;
   const orderWhatsAppHref = orderCode
     ? whatsappLink(
@@ -149,14 +156,19 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   useEffect(() => {
     if (!open) return undefined;
     const onKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      if (scheduleOpen) setScheduleOpen(false);
+      else onClose();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
+  }, [open, onClose, scheduleOpen]);
 
   useEffect(() => {
-    if (!open) setPlaced(false);
+    if (!open) {
+      setPlaced(false);
+      setScheduleOpen(false);
+    }
   }, [open]);
 
   const goBack = () => {
@@ -198,9 +210,29 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
       return;
     }
     if (!validateCheckout()) return;
+    if (when === "schedule") {
+      if (!scheduledAt) {
+        setScheduleOpen(true);
+        return;
+      }
+      const [hour, minute] = scheduledAt.time.split(":").map(Number);
+      const slotDate = new Date(scheduledAt.date);
+      slotDate.setHours(hour, minute, 0, 0);
+      const cutoff = new Date(Date.now() + 30 * 60 * 1000);
+      if (slotDate < cutoff) {
+        setScheduledAt(null);
+        setScheduleOpen(true);
+        return;
+      }
+    }
     const ready = new Date(Date.now() + 20 * 60 * 1000);
     setPlacedTime(
-      ready.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      when === "schedule" && scheduledAt
+        ? scheduledAt.sentence
+        : ready.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
     );
     setOrderCode(`ES-${Math.floor(1000 + Math.random() * 9000)}`);
     setPlacedTotal(total);
@@ -273,9 +305,13 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                 Order placed!
               </h2>
               <p className="mx-auto mt-2 max-w-[320px] text-[13px] leading-[1.55] text-ink/55">
-                {fulfilment === "delivery"
-                  ? `We'll ride it to you around ${placedTime}.`
-                  : `It'll be ready at the window around ${placedTime}.`}{" "}
+                {when === "schedule" && scheduledAt
+                  ? fulfilment === "delivery"
+                    ? `We'll ride it to you ${placedTime}.`
+                    : `It'll be ready at the window ${placedTime}.`
+                  : fulfilment === "delivery"
+                    ? `We'll ride it to you around ${placedTime}.`
+                    : `It'll be ready at the window around ${placedTime}.`}{" "}
                 Total {formatNaira(placedTotal)}.
               </p>
 
@@ -290,7 +326,10 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
 
               <div className="mt-5 flex items-start">
                 {["Received", "Cooking", "On the way"].map((label, index) => (
-                  <div key={label} className="flex flex-1 flex-col items-center">
+                  <div
+                    key={label}
+                    className="flex flex-1 flex-col items-center"
+                  >
                     <div className="flex w-full items-center">
                       <span
                         className={`h-0.5 flex-1 ${
@@ -342,55 +381,56 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   }
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[90] flex justify-end bg-ink/20 backdrop-blur-[2px]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
-          onClick={onClose}
-        >
-          <motion.aside
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="bag-title"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 330, damping: 34 }}
-            onClick={(event) => event.stopPropagation()}
-            className="flex h-svh w-full max-w-[440px] flex-col bg-cream-light shadow-[-18px_0_60px_rgba(30,20,10,0.16)]"
+    <>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex justify-end bg-ink/20 backdrop-blur-[2px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={onClose}
           >
-            <div className="flex h-[68px] shrink-0 items-center gap-3 border-b border-ink/10 px-4 sm:h-[76px] sm:px-5">
-              {isCheckout && (
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="bag-title"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 330, damping: 34 }}
+              onClick={(event) => event.stopPropagation()}
+              className="flex h-svh w-full max-w-[440px] flex-col bg-cream-light shadow-[-18px_0_60px_rgba(30,20,10,0.16)]"
+            >
+              <div className="flex h-[68px] shrink-0 items-center gap-3 border-b border-ink/10 px-4 sm:h-[76px] sm:px-5">
+                {isCheckout && (
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    aria-label="Back to your order"
+                    className="grid h-9 w-9 place-items-center rounded-full text-ink/65 transition-colors hover:bg-cream hover:text-ink"
+                  >
+                    <ArrowLeft />
+                  </button>
+                )}
+                <h2
+                  id="bag-title"
+                  className="font-display text-[21px] font-black tracking-[-0.035em] text-ink"
+                >
+                  {isCheckout ? "Checkout" : "Your order"}
+                </h2>
                 <button
                   type="button"
-                  onClick={goBack}
-                  aria-label="Back to your order"
-                  className="grid h-9 w-9 place-items-center rounded-full text-ink/65 transition-colors hover:bg-cream hover:text-ink"
+                  onClick={onClose}
+                  aria-label="Close bag"
+                  className="ml-auto grid h-9 w-9 place-items-center rounded-full border border-ink/15 text-ink/65 transition-colors hover:bg-cream hover:text-ink"
                 >
-                  <ArrowLeft />
+                  <CloseIcon />
                 </button>
-              )}
-              <h2
-                id="bag-title"
-                className="font-display text-[21px] font-black tracking-[-0.035em] text-ink"
-              >
-                {isCheckout ? "Checkout" : "Your order"}
-              </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close bag"
-                className="ml-auto grid h-9 w-9 place-items-center rounded-full border border-ink/15 text-ink/65 transition-colors hover:bg-cream hover:text-ink"
-              >
-                <CloseIcon />
-              </button>
-            </div>
+              </div>
 
-            <>
+              <>
                 <div className="flex-1 overflow-y-auto px-5 py-5">
                   {cartCount === 0 ? (
                     emptyState
@@ -441,9 +481,13 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                           />
                           <OptionCard
                             selected={when === "schedule"}
-                            onClick={() => setWhen("schedule")}
+                            onClick={() => setScheduleOpen(true)}
                             title="Schedule"
-                            detail="Pick a time"
+                            detail={
+                              when === "schedule" && scheduledAt
+                                ? scheduledAt.label
+                                : "Pick a time"
+                            }
                           />
                         </div>
                       </section>
@@ -634,7 +678,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                       {isCheckout && (
                         <SummaryLine
                           label="Delivery"
-                          value={deliveryFee === 0 ? "Free" : formatNaira(deliveryFee)}
+                          value={
+                            deliveryFee === 0
+                              ? "Free"
+                              : formatNaira(deliveryFee)
+                          }
                         />
                       )}
                       <div className="mt-2 border-t border-dashed border-ink/15 pt-2.5">
@@ -657,11 +705,24 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                     </button>
                   </div>
                 )}
-            </>
-          </motion.aside>
-        </motion.div>
-      )}
-    </AnimatePresence>
+              </>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <SchedulePicker
+        key={scheduleOpen ? scheduledAt?.label || "new" : "closed"}
+        open={scheduleOpen}
+        value={scheduledAt}
+        onClose={() => setScheduleOpen(false)}
+        onConfirm={(value) => {
+          setScheduledAt(value);
+          setWhen("schedule");
+          setScheduleOpen(false);
+        }}
+      />
+    </>
   );
 };
 
