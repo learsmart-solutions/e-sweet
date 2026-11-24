@@ -127,11 +127,10 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   } = useStore();
   const [fulfilment, setFulfilment] = useState("delivery");
   const [when, setWhen] = useState("asap");
-  const [address, setAddress] = useState(
-    "14 Admiralty Way, Lekki Phase 1",
-  );
-  const [phone, setPhone] = useState(user?.phone || "0803 123 4567");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [note, setNote] = useState("");
+  const [errors, setErrors] = useState({});
   const [placed, setPlaced] = useState(false);
   const [placedTotal, setPlacedTotal] = useState(0);
   const [placedTime, setPlacedTime] = useState("");
@@ -174,12 +173,31 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
     navigate("/checkout", { scroll: false });
   };
 
+  const validateCheckout = () => {
+    const nextErrors = {};
+
+    if (fulfilment === "delivery" && !address.trim()) {
+      nextErrors.address = "Enter your delivery address.";
+    }
+
+    const phoneDigits = phone.replace(/[^\d+]/g, "");
+    if (!phoneDigits) {
+      nextErrors.phone = "Enter your phone number.";
+    } else if (!/^\+?\d{10,15}$/.test(phoneDigits)) {
+      nextErrors.phone = "Enter a valid phone number.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const placeOrder = () => {
     if (!cartCount) return;
     if (!user) {
       navigate("/checkout-auth?next=checkout", { scroll: false });
       return;
     }
+    if (!validateCheckout()) return;
     const ready = new Date(Date.now() + 20 * 60 * 1000);
     setPlacedTime(
       ready.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -385,7 +403,15 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                         <div className="mt-2 grid grid-cols-2 gap-2.5">
                           <OptionCard
                             selected={fulfilment === "pickup"}
-                            onClick={() => setFulfilment("pickup")}
+                            onClick={() => {
+                              setFulfilment("pickup");
+                              if (errors.address) {
+                                setErrors((current) => ({
+                                  ...current,
+                                  address: "",
+                                }));
+                              }
+                            }}
                             title="Pickup"
                             detail="At the window · free"
                           />
@@ -430,12 +456,43 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                           >
                             Delivery address
                           </label>
-                          <input
+                          <textarea
                             id="checkout-address"
                             value={address}
-                            onChange={(event) => setAddress(event.target.value)}
-                            className="mt-2 h-11 w-full rounded-xl border border-ink/15 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                            onChange={(event) => {
+                              setAddress(event.target.value);
+                              if (errors.address) {
+                                setErrors((current) => ({
+                                  ...current,
+                                  address: "",
+                                }));
+                              }
+                            }}
+                            placeholder="Enter your delivery address"
+                            autoComplete="street-address"
+                            rows={3}
+                            required
+                            aria-invalid={Boolean(errors.address)}
+                            aria-describedby={
+                              errors.address
+                                ? "checkout-address-error"
+                                : undefined
+                            }
+                            className={`mt-2 w-full resize-none rounded-xl border bg-cream-light px-3.5 py-3 text-[13px] leading-[1.5] text-ink outline-none transition-colors placeholder:text-ink/30 focus:ring-1 focus:ring-tomato ${
+                              errors.address
+                                ? "border-tomato"
+                                : "border-ink/15 focus:border-tomato"
+                            }`}
                           />
+                          {errors.address && (
+                            <p
+                              id="checkout-address-error"
+                              role="alert"
+                              className="mt-1.5 text-[11px] font-semibold text-tomato"
+                            >
+                              {errors.address}
+                            </p>
+                          )}
                         </section>
                       )}
 
@@ -449,10 +506,38 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                         <input
                           id="checkout-phone"
                           value={phone}
-                          onChange={(event) => setPhone(event.target.value)}
+                          onChange={(event) => {
+                            setPhone(event.target.value);
+                            if (errors.phone) {
+                              setErrors((current) => ({
+                                ...current,
+                                phone: "",
+                              }));
+                            }
+                          }}
+                          placeholder="Enter your phone number"
+                          autoComplete="tel"
                           inputMode="tel"
-                          className="mt-2 h-11 w-full rounded-xl border border-ink/15 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                          required
+                          aria-invalid={Boolean(errors.phone)}
+                          aria-describedby={
+                            errors.phone ? "checkout-phone-error" : undefined
+                          }
+                          className={`mt-2 h-11 w-full rounded-xl border bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors placeholder:text-ink/30 focus:ring-1 focus:ring-tomato ${
+                            errors.phone
+                              ? "border-tomato"
+                              : "border-ink/15 focus:border-tomato"
+                          }`}
                         />
+                        {errors.phone && (
+                          <p
+                            id="checkout-phone-error"
+                            role="alert"
+                            className="mt-1.5 text-[11px] font-semibold text-tomato"
+                          >
+                            {errors.phone}
+                          </p>
+                        )}
                       </section>
 
                       <section>
