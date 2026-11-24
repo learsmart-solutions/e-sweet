@@ -101,16 +101,26 @@ const MenuNav = ({ search, onSearchChange }) => {
             )}
 
             {user && userOpen && (
-              <div className="absolute right-0 top-[calc(100%+8px)] w-[150px] rounded-2xl bg-cream-light p-2 shadow-[0_16px_40px_rgba(30,20,10,0.16)] ring-1 ring-ink/10">
-                <p className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-ink/35">
-                  {user.email}
-                </p>
+              <div
+                role="menu"
+                aria-label="Profile menu"
+                className="absolute right-0 top-[calc(100%+8px)] w-[160px] rounded-2xl bg-cream-light p-2 shadow-[0_16px_40px_rgba(30,20,10,0.16)] ring-1 ring-ink/10"
+              >
+                <Link
+                  to="/settings"
+                  role="menuitem"
+                  onClick={() => setUserOpen(false)}
+                  className="block w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
+                >
+                  Settings
+                </Link>
                 <button
                   type="button"
+                  role="menuitem"
                   onClick={() => {
                     logout();
                     setUserOpen(false);
-                    navigate("/");
+                    navigate("/login", { replace: true });
                   }}
                   className="w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
                 >

@@ -3,6 +3,14 @@ import { motion } from "framer-motion";
 import BrandLogo from "../BrandLogo";
 import { navigate } from "../../lib/router";
 import { useStore } from "../../context/StoreContext";
+import FormError from "../FormError";
+import {
+  getConfirmPasswordError,
+  getEmailError,
+  getPasswordError,
+  getPhoneError,
+  getNameError,
+} from "../../lib/validation";
 
 const CloseIcon = () => (
   <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden="true">
@@ -16,6 +24,13 @@ const CloseIcon = () => (
   </svg>
 );
 
+const inputClass = (hasError, extra = "") =>
+  `${extra} h-11 w-full rounded-xl border bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:ring-1 focus:ring-tomato ${
+    hasError
+      ? "border-tomato focus:border-tomato"
+      : "border-ink/60 focus:border-tomato"
+  }`;
+
 const AuthModal = ({ initialMode = "signin", onClose }) => {
   const { signup, login } = useStore();
   const [mode, setMode] = useState(initialMode);
@@ -23,14 +38,50 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
 
   const isSignup = mode === "signup";
 
+  const clearError = (field) => {
+    setError("");
+    setErrors((current) => {
+      if (!current[field]) return current;
+      return { ...current, [field]: "" };
+    });
+  };
+
+  const validate = () => {
+    const nextErrors = {};
+
+    if (isSignup) {
+      const nameError = getNameError(name);
+      if (nameError) nextErrors.name = nameError;
+
+      const phoneError = getPhoneError(phone);
+      if (phoneError) nextErrors.phone = phoneError;
+
+      const confirmError = getConfirmPasswordError(password, confirmPassword);
+      if (confirmError) nextErrors.confirmPassword = confirmError;
+    }
+
+    const emailError = getEmailError(email);
+    if (emailError) nextErrors.email = emailError;
+
+    const passwordError = getPasswordError(password, isSignup);
+    if (passwordError) nextErrors.password = passwordError;
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   useEffect(() => {
     setMode(initialMode);
+    setConfirmPassword("");
     setError("");
+    setErrors({});
   }, [initialMode]);
 
   useEffect(() => {
@@ -43,7 +94,9 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
 
   const switchMode = () => {
     setMode((current) => (current === "signup" ? "signin" : "signup"));
+    setConfirmPassword("");
     setError("");
+    setErrors({});
   };
 
   const finish = () => {
@@ -55,15 +108,9 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
     event.preventDefault();
     setError("");
 
+    if (!validate()) return;
+
     if (isSignup) {
-      if (!name.trim() || !email.trim() || !phone.trim() || !password) {
-        setError("Please fill in every field to create your account.");
-        return;
-      }
-      if (password.length < 6) {
-        setError("Use at least 6 characters for your password.");
-        return;
-      }
       signup({
         name: name.trim(),
         email: email.trim(),
@@ -74,13 +121,8 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
       return;
     }
 
-    if (!email.trim() || !password) {
-      setError("Please enter your email and password.");
-      return;
-    }
-
     if (!login(email, password)) {
-      setError("That password is not right. Try again.");
+      setError("That email and password do not match. Try again.");
       return;
     }
 
@@ -133,7 +175,9 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
               type="button"
               onClick={() => {
                 setMode("signin");
+                setConfirmPassword("");
                 setError("");
+                setErrors({});
               }}
               aria-pressed={!isSignup}
               className={`flex-1 rounded-full py-2.5 text-[12.5px] font-bold transition-all ${
@@ -148,7 +192,9 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
               type="button"
               onClick={() => {
                 setMode("signup");
+                setConfirmPassword("");
                 setError("");
+                setErrors({});
               }}
               aria-pressed={isSignup}
               className={`flex-1 rounded-full py-2.5 text-[12.5px] font-bold transition-all ${
@@ -164,14 +210,34 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
           <form onSubmit={handleSubmit} noValidate className="mt-5">
             {isSignup && (
               <label className="mb-4 block">
-                <span className="text-[12px] font-bold text-ink">Full name</span>
+                <span className="text-[12px] font-bold text-ink">
+                  Full name
+                </span>
                 <input
                   value={name}
-                  onChange={(event) => setName(event.target.value)}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                    clearError("name");
+                  }}
+                  onBlur={() => {
+                    const nameError = getNameError(name);
+                    if (nameError) {
+                      setErrors((current) => ({
+                        ...current,
+                        name: nameError,
+                      }));
+                    }
+                  }}
                   autoComplete="name"
                   placeholder="Ada Okafor"
-                  className="mt-2 h-11 w-full rounded-xl border border-ink/60 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                  required
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={
+                    errors.name ? "auth-modal-name-error" : undefined
+                  }
+                  className={`mt-2 ${inputClass(Boolean(errors.name))}`}
                 />
+                <FormError id="auth-modal-name-error">{errors.name}</FormError>
               </label>
             )}
 
@@ -180,11 +246,26 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
               <input
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  clearError("email");
+                }}
+                onBlur={() => {
+                  const emailError = getEmailError(email);
+                  if (emailError) {
+                    setErrors((current) => ({ ...current, email: emailError }));
+                  }
+                }}
                 autoComplete="email"
                 placeholder="ada@example.com"
-                className="mt-2 h-11 w-full rounded-xl border border-ink/60 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                required
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={
+                  errors.email ? "auth-modal-email-error" : undefined
+                }
+                className={`mt-2 ${inputClass(Boolean(errors.email))}`}
               />
+              <FormError id="auth-modal-email-error">{errors.email}</FormError>
             </label>
 
             {isSignup && (
@@ -193,11 +274,31 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
+                  onChange={(event) => {
+                    setPhone(event.target.value);
+                    clearError("phone");
+                  }}
+                  onBlur={() => {
+                    const phoneError = getPhoneError(phone);
+                    if (phoneError) {
+                      setErrors((current) => ({
+                        ...current,
+                        phone: phoneError,
+                      }));
+                    }
+                  }}
                   autoComplete="tel"
                   placeholder="0803 123 4567"
-                  className="mt-2 h-11 w-full rounded-xl border border-ink/60 bg-cream-light px-3.5 text-[13px] text-ink outline-none transition-colors focus:border-tomato focus:ring-1 focus:ring-tomato"
+                  required
+                  aria-invalid={Boolean(errors.phone)}
+                  aria-describedby={
+                    errors.phone ? "auth-modal-phone-error" : undefined
+                  }
+                  className={`mt-2 ${inputClass(Boolean(errors.phone))}`}
                 />
+                <FormError id="auth-modal-phone-error">
+                  {errors.phone}
+                </FormError>
               </label>
             )}
 
@@ -207,14 +308,31 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    clearError("password");
+                    clearError("confirmPassword");
+                  }}
+                  onBlur={() => {
+                    const passwordError = getPasswordError(password, isSignup);
+                    if (passwordError) {
+                      setErrors((current) => ({
+                        ...current,
+                        password: passwordError,
+                      }));
+                    }
+                  }}
                   autoComplete={isSignup ? "new-password" : "current-password"}
+                  required
+                  aria-invalid={Boolean(errors.password || error)}
+                  aria-describedby={
+                    errors.password ? "auth-modal-password-error" : undefined
+                  }
                   placeholder="••••••••"
-                  className={`h-11 w-full rounded-xl border bg-cream-light px-3.5 pr-16 text-[13px] text-ink outline-none transition-colors focus:ring-1 ${
-                    error
-                      ? "border-tomato focus:border-tomato focus:ring-tomato"
-                      : "border-ink/60 focus:border-tomato focus:ring-tomato"
-                  }`}
+                  className={inputClass(
+                    Boolean(errors.password || error),
+                    "pr-16",
+                  )}
                 />
                 <button
                   type="button"
@@ -224,7 +342,51 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </span>
+              <FormError id="auth-modal-password-error">
+                {errors.password}
+              </FormError>
             </label>
+
+            {isSignup && (
+              <label className="mt-4 block">
+                <span className="text-[12px] font-bold text-ink">
+                  Confirm password
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    clearError("confirmPassword");
+                  }}
+                  onBlur={() => {
+                    const confirmError = getConfirmPasswordError(
+                      password,
+                      confirmPassword,
+                    );
+                    if (confirmError) {
+                      setErrors((current) => ({
+                        ...current,
+                        confirmPassword: confirmError,
+                      }));
+                    }
+                  }}
+                  autoComplete="new-password"
+                  placeholder="Repeat your password"
+                  required
+                  aria-invalid={Boolean(errors.confirmPassword)}
+                  aria-describedby={
+                    errors.confirmPassword
+                      ? "auth-modal-confirm-password-error"
+                      : undefined
+                  }
+                  className={`mt-2 ${inputClass(Boolean(errors.confirmPassword))}`}
+                />
+                <FormError id="auth-modal-confirm-password-error">
+                  {errors.confirmPassword}
+                </FormError>
+              </label>
+            )}
 
             {error && (
               <p
