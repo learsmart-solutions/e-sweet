@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "../lib/router";
+import BrandLogo from "./BrandLogo";
 
 const links = [
   { label: "Our story", href: "#story" },
@@ -8,22 +9,6 @@ const links = [
   { label: "How it works", href: "#how" },
   { label: "Visit", href: "#visit" },
 ];
-
-export const ContainerMark = () => (
-  <svg
-    viewBox="0 0 30 24"
-    aria-hidden="true"
-    className="h-[22px] w-[28px] shrink-0 drop-shadow-[0_2px_0_rgba(0,0,0,0.14)] sm:h-[24px] sm:w-[30px]"
-  >
-    <rect width="30" height="24" rx="4" fill="#d7261e" />
-    <path
-      d="M7 7h16M7 12h10M7 17h16"
-      stroke="#fffbf3"
-      strokeWidth="2.1"
-      strokeLinecap="round"
-    />
-  </svg>
-);
 
 const SiteNav = ({ visible }) => {
   const [open, setOpen] = useState(false);
@@ -105,13 +90,10 @@ const SiteNav = ({ visible }) => {
           <div className="relative flex h-[54px] items-center justify-between rounded-full bg-cream-light/95 pl-3 pr-2 shadow-[0_12px_36px_rgba(40,80,110,0.16)] ring-1 ring-black/[0.03] sm:h-[58px] sm:pl-5 sm:pr-3">
             <a
               href="#top"
-              className="flex items-center gap-2.5 sm:gap-3"
+              className="flex items-center"
               aria-label="e'sweet home"
             >
-              <ContainerMark />
-              <span className="font-logo text-[22px] font-extrabold leading-none tracking-[-0.035em] text-tomato sm:text-[24px]">
-                e&apos;sweet
-              </span>
+              <BrandLogo className="h-[24px] w-auto sm:h-[28px]" />
             </a>
 
             <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex">
@@ -203,13 +185,10 @@ const SiteNav = ({ visible }) => {
               <a
                 href="#top"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 sm:gap-3"
+                className="flex items-center"
                 aria-label="e'sweet home"
               >
-                <ContainerMark />
-                <span className="font-logo text-[22px] font-extrabold leading-none tracking-[-0.035em] text-tomato sm:text-[24px]">
-                  e&apos;sweet
-                </span>
+                <BrandLogo className="h-[24px] w-auto sm:h-[28px]" />
               </a>
 
               <button

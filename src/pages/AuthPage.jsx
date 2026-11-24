@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ContainerMark } from "../components/SiteNav";
+import BrandLogo from "../components/BrandLogo";
 import { Link, navigate } from "../lib/router";
 import { useStore } from "../context/StoreContext";
 import FormError from "../components/FormError";
@@ -120,11 +120,8 @@ const AuthPage = ({ mode = "signup" }) => {
   return (
     <div className="grid min-h-svh bg-cream lg:grid-cols-[46%_54%]">
       <aside className="relative overflow-hidden bg-tomato px-5 py-6 text-white lg:flex lg:flex-col lg:px-12 lg:py-10">
-        <Link to="/" className="relative z-10 flex items-center gap-2.5">
-          <ContainerMark />
-          <span className="font-logo text-[25px] font-extrabold leading-none tracking-[-0.035em] text-white">
-            e&apos;sweet
-          </span>
+        <Link to="/" className="relative z-10 flex items-center">
+          <BrandLogo className="h-[28px] w-auto" light />
         </Link>
 
         <div className="relative z-10 mt-8 max-w-[490px] lg:mt-24">

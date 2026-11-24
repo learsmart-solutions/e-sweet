@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ContainerMark } from "../SiteNav";
+import BrandLogo from "../BrandLogo";
 import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
 
@@ -97,13 +97,10 @@ const MenuNav = ({ search, onSearchChange }) => {
       <div className="mx-auto flex h-[68px] w-full max-w-[1312px] items-center gap-3 px-4 sm:h-[76px] sm:gap-5 sm:px-8 lg:px-12">
         <Link
           to="/"
-          className="flex shrink-0 items-center gap-2.5"
+          className="flex shrink-0 items-center"
           aria-label="e'sweet home"
         >
-          <ContainerMark />
-          <span className="font-logo text-[21px] font-extrabold leading-none tracking-[-0.035em] text-tomato sm:text-[23px]">
-            e&apos;sweet
-          </span>
+          <BrandLogo className="h-[23px] w-auto sm:h-[26px]" />
         </Link>
 
         <div className="mx-auto hidden w-full max-w-[440px] md:block">

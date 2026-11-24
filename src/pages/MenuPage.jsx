@@ -3,7 +3,7 @@ import MenuNav from "../components/menu/MenuNav";
 import MenuCard from "../components/menu/MenuCard";
 import BagDrawer from "../components/menu/BagDrawer";
 import AuthModal from "../components/auth/AuthModal";
-import { ContainerMark } from "../components/SiteNav";
+import BrandLogo from "../components/BrandLogo";
 import { Link, navigate } from "../lib/router";
 import { menuItems } from "../data/menu";
 import { formatNaira, useStore } from "../context/StoreContext";
@@ -42,11 +42,8 @@ const SearchIcon = () => (
 const MenuFooter = () => (
   <footer className="bg-ink px-5 pb-9 pt-9 text-cream sm:px-8 lg:px-12">
     <div className="mx-auto flex w-full max-w-[1312px] flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-      <Link to="/" className="flex items-center gap-2.5" aria-label="e'sweet home">
-        <ContainerMark />
-        <span className="font-logo text-[22px] font-extrabold leading-none tracking-[-0.035em] text-tomato">
-          e&apos;sweet
-        </span>
+      <Link to="/" className="flex items-center" aria-label="e'sweet home">
+        <BrandLogo className="h-[24px] w-auto" />
       </Link>
       <p className="text-[12px] text-cream/50">
         20A, Idiroko Road Sango Ota, Ogun State.
