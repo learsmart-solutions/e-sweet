@@ -19,6 +19,18 @@ const testimonials = [
 
 const nextOrder = (order) => [...order.slice(1), order[0]];
 
+// Time each review stays on top while the deck auto-shuffles. Long enough to
+// read a one-line quote.
+const SHUFFLE_MS = 3000;
+// Short pause before the first shuffle, so a mouse passing over the deck
+// doesn't trigger it.
+const HOVER_DELAY_MS = 420;
+
+// Phones send mouseenter on tap but mouseleave only when you tap somewhere
+// else, so a tap would start a shuffle that never stops. Only a real mouse
+// counts as hovering; touch users tap to advance instead.
+const isMouse = (event) => event.pointerType === "mouse";
+
 const TestimonialStack = () => {
   const [order, setOrder] = useState([0, 1, 2]);
   const [hovering, setHovering] = useState(false);
@@ -31,8 +43,11 @@ const TestimonialStack = () => {
   useEffect(() => {
     if (!hovering || reduceMotion) return undefined;
 
-    const first = window.setTimeout(advance, 420);
-    const interval = window.setInterval(advance, 1350);
+    let interval;
+    const first = window.setTimeout(() => {
+      advance();
+      interval = window.setInterval(advance, SHUFFLE_MS);
+    }, HOVER_DELAY_MS);
     return () => {
       window.clearTimeout(first);
       window.clearInterval(interval);
@@ -50,8 +65,8 @@ const TestimonialStack = () => {
     <Reveal delay={0.08} y={24}>
       <div
         className="relative mx-auto h-[340px] w-full max-w-[430px] cursor-pointer rounded-[26px] outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-4 focus-visible:ring-offset-tomato sm:h-[370px]"
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
+        onPointerEnter={(event) => isMouse(event) && setHovering(true)}
+        onPointerLeave={(event) => isMouse(event) && setHovering(false)}
         onClick={advance}
         onKeyDown={handleKeyDown}
         role="group"

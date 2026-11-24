@@ -119,12 +119,6 @@
     border-radius: 24px 30px 26px 32px / 30px 24px 32px 26px;
   }
 
-  .testimonial-float {
-    animation: testimonial-float var(--float-dur, 6.5s) ease-in-out
-      var(--float-delay, 0s) infinite;
-    will-change: transform;
-  }
-
   .mobile-scene-drift {
     position: absolute;
     inset: 0;
@@ -298,7 +292,6 @@
   .mobile-container-shadow,
   .mobile-dust span,
   .plate-shine,
-  .testimonial-float,
   .animate-marquee,
   .animate-orbit,
   .animate-orbit-mobile,
@@ -376,16 +369,6 @@
   }
   100% {
     transform: scale(1.055) translate3d(0, -1.4%, 0);
-  }
-}
-
-@keyframes testimonial-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(0, -7px, 0) rotate(var(--float-tilt, 0.6deg));
   }
 }
 
