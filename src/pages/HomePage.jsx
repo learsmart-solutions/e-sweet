@@ -3,6 +3,7 @@ import { useReducedMotion } from "framer-motion";
 import Hero from "../components/Hero";
 import SiteNav from "../components/SiteNav";
 import LandingPage from "../components/LandingPage";
+import WhatsAppFab from "../components/WhatsAppFab";
 
 const HomePage = () => {
   const [navVisible, setNavVisible] = useState(false);
@@ -13,6 +14,7 @@ const HomePage = () => {
       <SiteNav visible={navVisible || reduceMotion} />
       <Hero onNavChange={setNavVisible} />
       <LandingPage />
+      {(navVisible || reduceMotion) && <WhatsAppFab />}
     </main>
   );
 };
