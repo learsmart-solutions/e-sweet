@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ContainerMark } from "../SiteNav";
 import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
@@ -42,14 +42,58 @@ const BagIcon = () => (
   </svg>
 );
 
+const ChevronDown = ({ open = false }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={`h-3.5 w-3.5 transition-transform duration-200 ${
+      open ? "rotate-180" : ""
+    }`}
+    aria-hidden="true"
+  >
+    <path
+      d="m6 9 6 6 6-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const MenuNav = ({ search, onSearchChange }) => {
   const { user, cartCount, bagTotal, logout } = useStore();
   const [userOpen, setUserOpen] = useState(false);
+  const profileRef = useRef(null);
+  const triggerRef = useRef(null);
   const firstName = user?.name?.split(" ")[0] || "";
   const initial = user?.name?.trim()?.[0]?.toUpperCase() || "G";
 
+  useEffect(() => {
+    if (!userOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!profileRef.current?.contains(event.target)) {
+        setUserOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setUserOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [userOpen]);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-ink/10 bg-cream-light/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-ink/10 bg-cream-light/95 shadow-[0_10px_30px_rgba(30,20,10,0.08)] backdrop-blur-md">
       <div className="mx-auto flex h-[68px] w-full max-w-[1312px] items-center gap-3 px-4 sm:h-[76px] sm:gap-5 sm:px-8 lg:px-12">
         <Link
           to="/"
@@ -76,59 +120,76 @@ const MenuNav = ({ search, onSearchChange }) => {
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-2.5 sm:gap-3">
-          <div className="relative">
-            {user ? (
-              <button
-                type="button"
-                onClick={() => setUserOpen((value) => !value)}
-                aria-expanded={userOpen}
-                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-[13px] font-bold text-ink/75 transition-colors hover:text-tomato"
+          <div className="relative" ref={profileRef}>
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={() => setUserOpen((value) => !value)}
+              aria-expanded={userOpen}
+              aria-controls="profile-menu"
+              aria-label="Open account menu"
+              className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2 text-[13px] font-bold text-ink/75 transition-colors hover:text-tomato"
+            >
+              <span
+                className={`grid h-8 w-8 place-items-center rounded-full text-[12px] font-black ${
+                  user ? "bg-tomato text-white" : "bg-sand text-ink/60"
+                }`}
               >
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-tomato text-[12px] font-black text-white">
-                  {initial}
-                </span>
-                <span className="hidden max-w-[72px] truncate sm:inline">
-                  {firstName}
-                </span>
-              </button>
-            ) : (
-              <Link
-                to="/login"
-                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-[13px] font-bold text-ink/75 transition-colors hover:text-tomato"
-              >
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-sand text-[12px] font-black text-ink/60">
-                  G
-                </span>
-                <span className="hidden sm:inline">Log in</span>
-              </Link>
-            )}
+                {user ? initial : "G"}
+              </span>
+              <span className="hidden max-w-[72px] truncate sm:inline">
+                {user ? firstName : "Log in"}
+              </span>
+              <ChevronDown open={userOpen} />
+            </button>
 
-            {user && userOpen && (
+            {userOpen && (
               <div
-                role="menu"
-                aria-label="Profile menu"
-                className="absolute right-0 top-[calc(100%+8px)] w-[160px] rounded-2xl bg-cream-light p-2 shadow-[0_16px_40px_rgba(30,20,10,0.16)] ring-1 ring-ink/10"
+                id="profile-menu"
+                className="absolute right-0 top-[calc(100%+8px)] z-50 w-[176px] rounded-2xl bg-cream-light p-2 shadow-[0_16px_40px_rgba(30,20,10,0.16)] ring-1 ring-ink/10"
               >
-                <Link
-                  to="/settings"
-                  role="menuitem"
-                  onClick={() => setUserOpen(false)}
-                  className="block w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
-                >
-                  Settings
-                </Link>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    logout();
-                    setUserOpen(false);
-                    navigate("/login", { replace: true });
-                  }}
-                  className="w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
-                >
-                  Log out
-                </button>
+                <p className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-ink/35">
+                  Account
+                </p>
+                {user ? (
+                  <>
+                    <Link
+                      to="/settings"
+                      onClick={() => setUserOpen(false)}
+                      className="block w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
+                    >
+                      Settings
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        setUserOpen(false);
+                        navigate("/login", { replace: true });
+                      }}
+                      className="w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
+                    >
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setUserOpen(false)}
+                      className="block w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setUserOpen(false)}
+                      className="block w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink/70 hover:bg-cream hover:text-tomato"
+                    >
+                      Create account
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>
