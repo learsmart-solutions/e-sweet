@@ -1,5 +1,5 @@
 import React from "react";
-import { ContainerMark } from "../SiteNav";
+import BrandLogo from "../BrandLogo";
 import WhatsAppIcon from "../WhatsAppIcon";
 import {
   WHATSAPP_CONTACT_LABEL,
@@ -85,13 +85,10 @@ const Footer = () => (
       <div className="flex flex-col gap-8 border-b border-cream/10 pb-8 md:flex-row md:items-center md:justify-between">
         <a
           href="#top"
-          className="flex items-center gap-2.5"
+          className="flex items-center"
           aria-label="e'sweet home"
         >
-          <ContainerMark />
-          <span className="font-logo text-[23px] font-extrabold leading-none tracking-[-0.035em] text-tomato">
-            e&apos;sweet
-          </span>
+          <BrandLogo className="h-[26px] w-auto" />
         </a>
 
         <nav
