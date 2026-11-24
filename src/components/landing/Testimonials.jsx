@@ -1,88 +1,140 @@
-import React, { useRef } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import Reveal from "./Reveal";
-import usePauseOffscreen from "../../hooks/usePauseOffscreen";
 
 const testimonials = [
   {
     quote: "The jollof tastes like a Saturday party. I order every Friday.",
     author: "Tolu A.",
-    rotate: "lg:-rotate-2",
   },
   {
     quote: "Fast pickup, hot food, and the shawarma is unreal.",
     author: "Chinedu O.",
-    rotate: "lg:rotate-[0.6deg]",
   },
   {
     quote: "Love that I can order ahead and skip the queue at lunch.",
     author: "Amaka E.",
-    rotate: "lg:rotate-[1.4deg]",
   },
 ];
 
-const Testimonials = () => {
-  const sectionRef = useRef(null);
-  usePauseOffscreen(sectionRef);
+const nextOrder = (order) => [...order.slice(1), order[0]];
+
+// Time each review stays on top while the deck auto-shuffles. Long enough to
+// read a one-line quote.
+const SHUFFLE_MS = 3000;
+// Short pause before the first shuffle, so a mouse passing over the deck
+// doesn't trigger it.
+const HOVER_DELAY_MS = 420;
+
+// Phones send mouseenter on tap but mouseleave only when you tap somewhere
+// else, so a tap would start a shuffle that never stops. Only a real mouse
+// counts as hovering; touch users tap to advance instead.
+const isMouse = (event) => event.pointerType === "mouse";
+
+const TestimonialStack = () => {
+  const [order, setOrder] = useState([0, 1, 2]);
+  const [hovering, setHovering] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  const advance = useCallback(() => {
+    setOrder((current) => nextOrder(current));
+  }, []);
+
+  useEffect(() => {
+    if (!hovering || reduceMotion) return undefined;
+
+    let interval;
+    const first = window.setTimeout(() => {
+      advance();
+      interval = window.setInterval(advance, SHUFFLE_MS);
+    }, HOVER_DELAY_MS);
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(interval);
+    };
+  }, [advance, hovering, reduceMotion]);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      advance();
+    }
+  };
 
   return (
-    <section ref={sectionRef} className="overflow-hidden bg-tomato px-5 py-20 text-cream sm:px-8 md:py-28 lg:px-16">
-      <div className="mx-auto w-full max-w-[1312px]">
-        <Reveal className="text-center">
-          <p className="font-display text-[10px] font-bold uppercase tracking-[0.32em] text-gold sm:text-[11px]">
-            Word on the street
-          </p>
-          <h2 className="mt-4 font-display text-[clamp(2.4rem,5.2vw,4.6rem)] font-black leading-[0.92] tracking-[-0.05em] text-cream">
-            People queue for this box.
-          </h2>
-        </Reveal>
-
-        <div className="mt-12 grid gap-6 sm:mt-14 lg:grid-cols-3 lg:gap-6">
-          {testimonials.map((testimonial, index) => (
-            <Reveal
+    <Reveal delay={0.08} y={24}>
+      <div
+        className="relative mx-auto h-[340px] w-full max-w-[430px] cursor-pointer rounded-[26px] outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-4 focus-visible:ring-offset-tomato sm:h-[370px]"
+        onPointerEnter={(event) => isMouse(event) && setHovering(true)}
+        onPointerLeave={(event) => isMouse(event) && setHovering(false)}
+        onClick={advance}
+        onKeyDown={handleKeyDown}
+        role="group"
+        aria-label="Customer reviews. Hover or tap to shuffle."
+        tabIndex={0}
+      >
+        {testimonials.map((testimonial, index) => {
+          const position = order.indexOf(index);
+          return (
+            <motion.div
               key={testimonial.author}
-              delay={0.08 + index * 0.1}
-              y={24}
-              className="h-full"
+              className="absolute inset-x-0 top-0 h-[290px] sm:h-[315px]"
+              style={{ zIndex: testimonials.length - position }}
+              animate={{
+                y: position * 18,
+                scale: 1 - position * 0.035,
+                rotate: position === 0 ? 0 : position === 1 ? -1.1 : 1.2,
+              }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { type: "spring", stiffness: 220, damping: 26, mass: 0.8 }
+              }
             >
-              <div
-                className={`h-full transition-transform duration-500 hover:rotate-0 ${testimonial.rotate}`}
-              >
-                {/* CSS keyframes, not a JS loop: the float runs on the
-                    compositor and pauses when the section is off-screen. */}
+              <figure className="testimonial-card flex h-full flex-col bg-cream p-7 text-ink shadow-[0_22px_45px_rgba(90,10,5,0.24)] sm:p-8">
                 <div
-                  className="testimonial-float h-full"
-                  style={{
-                    "--float-dur": `${6.5 + index * 1.1}s`,
-                    "--float-delay": `${index * 0.45}s`,
-                    "--float-tilt": `${index % 2 === 0 ? 0.6 : -0.6}deg`,
-                  }}
+                  aria-label="5 out of 5 stars"
+                  className="flex items-center gap-1 text-[15px] leading-none text-gold"
                 >
-                  <figure
-                    className="testimonial-card h-full bg-cream p-7 text-ink shadow-[0_22px_45px_rgba(90,10,5,0.24)] transition-transform duration-300 hover:scale-[1.015] sm:p-8"
-                  >
-                    <div
-                      aria-label="5 out of 5 stars"
-                      className="flex items-center gap-1 text-[15px] leading-none text-gold"
-                    >
-                      <span aria-hidden="true">★★★★★</span>
-                    </div>
-
-                    <blockquote className="mt-5 font-display text-[19px] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink sm:text-[21px]">
-                      “{testimonial.quote}”
-                    </blockquote>
-
-                    <figcaption className="mt-5 text-[13px] font-semibold text-ink/45 sm:text-[14px]">
-                      {testimonial.author}
-                    </figcaption>
-                  </figure>
+                  <span aria-hidden="true">★★★★★</span>
                 </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+
+                <blockquote className="mt-5 flex-1 font-display text-[19px] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink sm:text-[21px]">
+                  “{testimonial.quote}”
+                </blockquote>
+
+                <figcaption className="mt-5 text-[13px] font-semibold text-ink/45 sm:text-[14px]">
+                  {testimonial.author}
+                </figcaption>
+              </figure>
+            </motion.div>
+          );
+        })}
       </div>
-    </section>
+      <p className="mt-5 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-cream/55">
+        Hover or tap to shuffle
+      </p>
+    </Reveal>
   );
 };
+
+const Testimonials = () => (
+  <section className="overflow-hidden bg-tomato px-5 py-20 text-cream sm:px-8 md:py-28 lg:px-16">
+    <div className="mx-auto w-full max-w-[1312px]">
+      <Reveal className="text-center">
+        <p className="font-display text-[10px] font-bold uppercase tracking-[0.32em] text-gold sm:text-[11px]">
+          Word on the street
+        </p>
+        <h2 className="mt-4 font-display text-[clamp(2.4rem,5.2vw,4.6rem)] font-black leading-[0.92] tracking-[-0.05em] text-cream">
+          People queue for this box.
+        </h2>
+      </Reveal>
+
+      <div className="mt-12 sm:mt-14">
+        <TestimonialStack />
+      </div>
+    </div>
+  </section>
+);
 
 export default Testimonials;
