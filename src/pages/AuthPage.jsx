@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ContainerMark } from "../components/SiteNav";
+import BrandLogo from "../components/BrandLogo";
 import { Link, navigate } from "../lib/router";
 import { useStore } from "../context/StoreContext";
 import FormError from "../components/FormError";
@@ -9,6 +9,7 @@ import {
   getPasswordError,
   getPhoneError,
   getNameError,
+  PASSWORD_HINT,
 } from "../lib/validation";
 import jollofImg from "../assets/menu/smoky-jollof.png";
 import yamImg from "../assets/menu/pounded-yam.png";
@@ -120,11 +121,8 @@ const AuthPage = ({ mode = "signup" }) => {
   return (
     <div className="grid min-h-svh bg-cream lg:grid-cols-[46%_54%]">
       <aside className="relative overflow-hidden bg-tomato px-5 py-6 text-white lg:flex lg:flex-col lg:px-12 lg:py-10">
-        <Link to="/" className="relative z-10 flex items-center gap-2.5">
-          <ContainerMark />
-          <span className="font-logo text-[25px] font-extrabold leading-none tracking-[-0.035em] text-white">
-            e&apos;sweet
-          </span>
+        <Link to="/" className="relative z-10 flex items-center">
+          <BrandLogo className="h-[28px] w-auto" light />
         </Link>
 
         <div className="relative z-10 mt-8 max-w-[490px] lg:mt-24">
@@ -320,7 +318,12 @@ const AuthPage = ({ mode = "signup" }) => {
                   required
                   aria-invalid={Boolean(errors.password || error)}
                   aria-describedby={
-                    errors.password ? "auth-password-error" : undefined
+                    [
+                      isSignup && "auth-password-hint",
+                      errors.password && "auth-password-error",
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined
                   }
                   placeholder="••••••••"
                   className={inputClass(
@@ -336,6 +339,14 @@ const AuthPage = ({ mode = "signup" }) => {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </span>
+              {isSignup && (
+                <p
+                  id="auth-password-hint"
+                  className="mt-1.5 text-[11px] text-ink/55"
+                >
+                  {PASSWORD_HINT}
+                </p>
+              )}
               <FormError id="auth-password-error">{errors.password}</FormError>
             </label>
 

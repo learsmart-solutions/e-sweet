@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ContainerMark } from "../SiteNav";
+import BrandLogo from "../BrandLogo";
 import { navigate } from "../../lib/router";
 import { useStore } from "../../context/StoreContext";
 import FormError from "../FormError";
@@ -10,6 +10,7 @@ import {
   getPasswordError,
   getPhoneError,
   getNameError,
+  PASSWORD_HINT,
 } from "../../lib/validation";
 
 const CloseIcon = () => (
@@ -158,11 +159,8 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
             <CloseIcon />
           </button>
 
-          <div className="flex items-center gap-2.5 pr-10">
-            <ContainerMark />
-            <span className="font-logo text-[23px] font-extrabold leading-none tracking-[-0.035em] text-white">
-              e&apos;sweet
-            </span>
+          <div className="flex items-center pr-10">
+            <BrandLogo className="h-[26px] w-auto" light />
           </div>
           <p
             id="auth-title"
@@ -329,7 +327,12 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                   required
                   aria-invalid={Boolean(errors.password || error)}
                   aria-describedby={
-                    errors.password ? "auth-modal-password-error" : undefined
+                    [
+                      isSignup && "auth-modal-password-hint",
+                      errors.password && "auth-modal-password-error",
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined
                   }
                   placeholder="••••••••"
                   className={inputClass(
@@ -345,6 +348,14 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </span>
+              {isSignup && (
+                <p
+                  id="auth-modal-password-hint"
+                  className="mt-1.5 text-[11px] text-ink/55"
+                >
+                  {PASSWORD_HINT}
+                </p>
+              )}
               <FormError id="auth-modal-password-error">
                 {errors.password}
               </FormError>

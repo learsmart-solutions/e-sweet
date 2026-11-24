@@ -4,8 +4,13 @@ export const normalizePhone = (value = "") => value.replace(/[^\d+]/g, "");
 
 export const isValidEmail = (value = "") => EMAIL_PATTERN.test(value.trim());
 
+// Standard Nigerian mobile numbers:
+// - Local format: 11 digits starting with 070, 071, 080, 081, 090, 091
+// - International format: +234 or 234 followed by 70, 71, 80, 81, 90, 91 and
+//   8 digits. People often keep the leading 0 after the country code
+//   (+234 0803 123 4567), so that is accepted too.
 export const isValidPhone = (value = "") =>
-  /^\+?\d{10,15}$/.test(normalizePhone(value));
+  /^(?:\+?2340?|0)[789][01]\d{8}$/.test(normalizePhone(value));
 
 export const getEmailError = (value = "") => {
   if (!value.trim()) return "Enter your email address.";
@@ -15,17 +20,28 @@ export const getEmailError = (value = "") => {
 
 export const getPhoneError = (value = "") => {
   if (!value.trim()) return "Enter your phone number.";
-  if (!isValidPhone(value)) return "Enter a valid phone number.";
+  if (!isValidPhone(value))
+    return "Enter a valid Nigerian phone number (e.g. 0803 123 4567).";
   return "";
 };
 
 export const getNameError = (value = "") =>
   value.trim().length < 2 ? "Enter your full name." : "";
 
+// Shown under the signup password field, so people see every rule before
+// they type rather than discovering them one error at a time.
+export const PASSWORD_HINT =
+  "At least 8 characters, with a capital letter and a symbol.";
+
 export const getPasswordError = (value = "", isSignup = false) => {
   if (!value) return "Enter your password.";
-  if (isSignup && value.length < 6)
-    return "Use at least 6 characters for your password.";
+  if (isSignup) {
+    if (value.length < 8) return "Use at least 8 characters for your password.";
+    if (!/[A-Z]/.test(value))
+      return "Password must contain at least one uppercase letter.";
+    if (!/[^A-Za-z0-9]/.test(value))
+      return "Password must contain at least one special character.";
+  }
   return "";
 };
 
