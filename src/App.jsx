@@ -25,6 +25,8 @@ const isSettingsRoute = (route) =>
 const App = () => {
   const route = useRoute();
   const settingsRoute = isSettingsRoute(route);
+  const homeRoute =
+    route === "/" || (!knownRoutes.has(route) && !settingsRoute);
 
   return (
     <StoreProvider>
@@ -35,16 +37,16 @@ const App = () => {
       {route === "/signup" && <AuthPage mode="signup" />}
       {route === "/login" && <AuthPage mode="login" />}
       {settingsRoute && <Settings route={route} />}
-      {(route === "/" || (!knownRoutes.has(route) && !settingsRoute)) && (
-        <HomePage />
+      {homeRoute && <HomePage />}
+      {!homeRoute && (
+        <WhatsAppFab
+          hidden={
+            route === "/bag" ||
+            route === "/checkout" ||
+            route === "/checkout-auth"
+          }
+        />
       )}
-      <WhatsAppFab
-        hidden={
-          route === "/bag" ||
-          route === "/checkout" ||
-          route === "/checkout-auth"
-        }
-      />
     </StoreProvider>
   );
 };

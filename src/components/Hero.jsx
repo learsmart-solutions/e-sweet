@@ -24,7 +24,6 @@ import "../hero.css";
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const range = (progress, start, end) =>
   clamp01((progress - start) / (end - start));
-const inQuad = (t) => t * t;
 const outCubic = (t) => 1 - Math.pow(1 - t, 3);
 
 const useIsPhone = () =>
@@ -256,101 +255,104 @@ const Hero = ({ onNavChange }) => {
     }
   });
 
-  // Intro copy clears before the camera moves.
+  // Intro copy clears as the smoke sequence starts. The old camera push-in is
+  // intentionally gone: the container is already landed when the page opens,
+  // so the story begins closer to the smoke frames.
   const copyOpacity = useTransform(scrollYProgress, (p) =>
-    1 - range(p, 0.025, 0.13),
+    1 - range(p, 0.02, 0.1),
   );
   const copyY = useTransform(scrollYProgress, (p) =>
-    -30 * range(p, 0.025, 0.13),
+    -24 * range(p, 0.02, 0.1),
   );
 
-  // Camera pushes into the serving window, then the smoke frames take over.
-  const cameraScale = useTransform(scrollYProgress, (p) =>
-    1 + 3.4 * inQuad(range(p, 0.05, 0.29)),
-  );
+  // Frame one (z-index 10) fades in over 0.08–0.18 on top of the scene, so
+  // the scene stays fully visible underneath until the frame has landed and
+  // only then clears. Fading both at once let the dark backdrop show through.
   const cameraOpacity = useTransform(scrollYProgress, (p) =>
-    1 - range(p, 0.255, 0.325),
+    1 - range(p, 0.17, 0.2),
   );
   const cameraVisibility = useHiddenWhenClear(cameraOpacity);
 
   const frameOneOpacity = useTransform(scrollYProgress, (p) =>
-    range(p, 0.24, 0.33) * (1 - range(p, 0.4, 0.49)),
+    range(p, 0.08, 0.18) * (1 - range(p, 0.28, 0.38)),
   );
   const frameOneScale = useTransform(scrollYProgress, (p) =>
-    1.07 - 0.07 * outCubic(range(p, 0.24, 0.52)),
+    1.06 - 0.06 * outCubic(range(p, 0.08, 0.42)),
   );
   const frameOneSmoke = useTransform(scrollYProgress, (p) =>
-    range(p, 0.24, 0.33) * (1 - range(p, 0.36, 0.46)),
+    range(p, 0.08, 0.18) * (1 - range(p, 0.24, 0.34)),
   );
 
   const frameTwoOpacity = useTransform(scrollYProgress, (p) =>
-    range(p, 0.4, 0.49) * (1 - range(p, 0.57, 0.66)),
+    range(p, 0.28, 0.38) * (1 - range(p, 0.5, 0.6)),
   );
   const frameTwoScale = useTransform(scrollYProgress, (p) =>
-    1.06 - 0.06 * outCubic(range(p, 0.4, 0.68)),
+    1.05 - 0.05 * outCubic(range(p, 0.28, 0.62)),
   );
   const frameTwoSmoke = useTransform(scrollYProgress, (p) =>
-    range(p, 0.4, 0.49) * (1 - range(p, 0.54, 0.64)),
+    range(p, 0.28, 0.38) * (1 - range(p, 0.46, 0.56)),
   );
 
   const frameThreeOpacity = useTransform(scrollYProgress, (p) =>
-    range(p, 0.57, 0.66) * (1 - range(p, 0.78, 0.89)),
+    range(p, 0.5, 0.6) * (1 - range(p, 0.74, 0.84)),
   );
   const frameThreeScale = useTransform(scrollYProgress, (p) =>
-    1.05 - 0.05 * outCubic(range(p, 0.57, 0.86)),
+    1.04 - 0.04 * outCubic(range(p, 0.5, 0.8)),
   );
   const frameThreeSmoke = useTransform(scrollYProgress, (p) =>
-    range(p, 0.57, 0.66) * (1 - range(p, 0.74, 0.86)),
+    range(p, 0.5, 0.6) * (1 - range(p, 0.68, 0.78)),
   );
 
   // Phone storyboard: the supplied 375×812 frames are already the close-up
   // crops, so the phone timeline cross-fades them instead of zooming the
   // desktop artboard.
+  // Same idea as the desktop scene: hold the base until frame one (in over
+  // 0.08–0.16) covers it, then clear it.
   const mobileBaseOpacity = useTransform(scrollYProgress, (p) =>
-    1 - range(p, 0.06, 0.16),
+    1 - range(p, 0.15, 0.18),
   );
   const mobileBaseScale = useTransform(scrollYProgress, (p) =>
-    1 + 0.06 * range(p, 0, 0.16),
+    1 + 0.03 * range(p, 0, 0.1),
   );
   const mobileFrameOneOpacity = useTransform(scrollYProgress, (p) =>
-    range(p, 0.14, 0.22) * (1 - range(p, 0.34, 0.44)),
+    range(p, 0.08, 0.16) * (1 - range(p, 0.28, 0.38)),
   );
   const mobileFrameOneScale = useTransform(scrollYProgress, (p) =>
-    1.04 - 0.04 * range(p, 0.14, 0.44),
+    1.03 - 0.03 * range(p, 0.08, 0.38),
   );
   const mobileFrameOneSmoke = useTransform(scrollYProgress, (p) =>
-    range(p, 0.14, 0.22) * (1 - range(p, 0.3, 0.4)),
+    range(p, 0.08, 0.16) * (1 - range(p, 0.24, 0.34)),
   );
   const mobileFrameTwoOpacity = useTransform(scrollYProgress, (p) =>
-    range(p, 0.38, 0.46) * (1 - range(p, 0.58, 0.68)),
+    range(p, 0.3, 0.4) * (1 - range(p, 0.52, 0.62)),
   );
   const mobileFrameTwoScale = useTransform(scrollYProgress, (p) =>
-    1.05 - 0.05 * range(p, 0.38, 0.68),
+    1.04 - 0.04 * range(p, 0.3, 0.62),
   );
   const mobileFrameTwoSmoke = useTransform(scrollYProgress, (p) =>
-    range(p, 0.38, 0.46) * (1 - range(p, 0.54, 0.64)),
+    range(p, 0.3, 0.4) * (1 - range(p, 0.48, 0.58)),
   );
   const mobileFrameThreeOpacity = useTransform(scrollYProgress, (p) =>
-    range(p, 0.62, 0.7) * (1 - range(p, 0.8, 0.9)),
+    range(p, 0.52, 0.62) * (1 - range(p, 0.74, 0.84)),
   );
   const mobileFrameThreeScale = useTransform(scrollYProgress, (p) =>
-    1.04 - 0.04 * range(p, 0.62, 0.88),
+    1.03 - 0.03 * range(p, 0.52, 0.82),
   );
   const mobileFrameThreeSmoke = useTransform(scrollYProgress, (p) =>
-    range(p, 0.62, 0.7) * (1 - range(p, 0.76, 0.86)),
+    range(p, 0.52, 0.62) * (1 - range(p, 0.68, 0.78)),
   );
 
   // The steam lifts into the cream brand reveal.
   const creamOpacity = useTransform(scrollYProgress, (p) =>
-    range(p, 0.8, 0.9),
+    range(p, 0.76, 0.86),
   );
   const creamVisibility = useHiddenWhenClear(creamOpacity);
   const copyVisibility = useHiddenWhenClear(copyOpacity);
   const heroReveal = useTransform(scrollYProgress, (p) =>
-    range(p, 0.88, 0.975),
+    range(p, 0.84, 0.96),
   );
   const orbitOpacity = useTransform(scrollYProgress, (p) =>
-    0.2 + 0.8 * range(p, 0.86, 0.96),
+    0.2 + 0.8 * range(p, 0.82, 0.94),
   );
 
   if (reduceMotion) {
@@ -370,7 +372,7 @@ const Hero = ({ onNavChange }) => {
       id="top"
       ref={sectionRef}
       className={`relative bg-[#120b18] ${
-        isPhone ? "h-[320vh]" : "h-[420vh]"
+        isPhone ? "h-[260vh]" : "h-[320vh]"
       }`}
     >
       <div className="es-sticky" ref={stickyRef}>
@@ -418,10 +420,8 @@ const Hero = ({ onNavChange }) => {
                 <motion.div
                   className="es-camera"
                   style={{
-                    scale: cameraScale,
                     opacity: cameraOpacity,
                     visibility: cameraVisibility,
-                    transformOrigin: "50% 46%",
                   }}
                 >
                   <KitchenScene />
