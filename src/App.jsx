@@ -4,6 +4,7 @@ import { useRoute } from "./lib/router";
 import HomePage from "./pages/HomePage";
 import MenuPage from "./pages/MenuPage";
 import AuthPage from "./pages/AuthPage";
+import Settings from "./pages/Settings";
 import WhatsAppFab from "./components/WhatsAppFab";
 
 const knownRoutes = new Set([
@@ -14,10 +15,16 @@ const knownRoutes = new Set([
   "/checkout-auth",
   "/signup",
   "/login",
+  "/settings",
 ]);
+
+// Settings owns everything under /settings (home and its section pages).
+const isSettingsRoute = (route) =>
+  route === "/settings" || route.startsWith("/settings/");
 
 const App = () => {
   const route = useRoute();
+  const settingsRoute = isSettingsRoute(route);
 
   return (
     <StoreProvider>
@@ -27,7 +34,10 @@ const App = () => {
       {route === "/checkout-auth" && <MenuPage authMode="signin" />}
       {route === "/signup" && <AuthPage mode="signup" />}
       {route === "/login" && <AuthPage mode="login" />}
-      {(route === "/" || !knownRoutes.has(route)) && <HomePage />}
+      {settingsRoute && <Settings route={route} />}
+      {(route === "/" || (!knownRoutes.has(route) && !settingsRoute)) && (
+        <HomePage />
+      )}
       <WhatsAppFab
         hidden={
           route === "/bag" ||
