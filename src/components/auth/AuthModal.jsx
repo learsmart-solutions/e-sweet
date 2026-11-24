@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ContainerMark } from "../SiteNav";
+import BrandLogo from "../BrandLogo";
 import { navigate } from "../../lib/router";
 import { useStore } from "../../context/StoreContext";
 import FormError from "../FormError";
@@ -158,11 +158,8 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
             <CloseIcon />
           </button>
 
-          <div className="flex items-center gap-2.5 pr-10">
-            <ContainerMark />
-            <span className="font-logo text-[23px] font-extrabold leading-none tracking-[-0.035em] text-white">
-              e&apos;sweet
-            </span>
+          <div className="flex items-center pr-10">
+            <BrandLogo className="h-[26px] w-auto" light />
           </div>
           <p
             id="auth-title"

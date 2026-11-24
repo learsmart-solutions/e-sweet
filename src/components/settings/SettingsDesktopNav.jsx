@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ContainerMark } from "../SiteNav";
+import BrandLogo from "../BrandLogo";
 import { Link } from "../../lib/router";
 import { buttonVariants, getInitial } from "./settingsStyles";
 import { SETTINGS_PATH } from "./sections";
@@ -52,13 +52,10 @@ const SettingsDesktopNav = ({ user, onSignOut }) => {
     >
       <Link
         to="/"
-        className="flex shrink-0 items-center gap-2.5"
+        className="flex shrink-0 items-center"
         aria-label="e'sweet home"
       >
-        <ContainerMark />
-        <span className="font-logo text-[24px] font-extrabold leading-none tracking-[-0.035em] text-tomato">
-          e&apos;sweet
-        </span>
+        <BrandLogo className="h-[30px] w-auto" />
       </Link>
 
       {/* Below 1440px (the Figma frame width) there isn't room to centre the
