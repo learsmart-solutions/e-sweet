@@ -10,6 +10,7 @@ import {
   getPasswordError,
   getPhoneError,
   getNameError,
+  PASSWORD_HINT,
 } from "../../lib/validation";
 
 const CloseIcon = () => (
@@ -326,7 +327,12 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                   required
                   aria-invalid={Boolean(errors.password || error)}
                   aria-describedby={
-                    errors.password ? "auth-modal-password-error" : undefined
+                    [
+                      isSignup && "auth-modal-password-hint",
+                      errors.password && "auth-modal-password-error",
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined
                   }
                   placeholder="••••••••"
                   className={inputClass(
@@ -342,6 +348,14 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </span>
+              {isSignup && (
+                <p
+                  id="auth-modal-password-hint"
+                  className="mt-1.5 text-[11px] text-ink/55"
+                >
+                  {PASSWORD_HINT}
+                </p>
+              )}
               <FormError id="auth-modal-password-error">
                 {errors.password}
               </FormError>

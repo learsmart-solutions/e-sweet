@@ -9,6 +9,7 @@ import {
   getPasswordError,
   getPhoneError,
   getNameError,
+  PASSWORD_HINT,
 } from "../lib/validation";
 import jollofImg from "../assets/menu/smoky-jollof.png";
 import yamImg from "../assets/menu/pounded-yam.png";
@@ -317,7 +318,12 @@ const AuthPage = ({ mode = "signup" }) => {
                   required
                   aria-invalid={Boolean(errors.password || error)}
                   aria-describedby={
-                    errors.password ? "auth-password-error" : undefined
+                    [
+                      isSignup && "auth-password-hint",
+                      errors.password && "auth-password-error",
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined
                   }
                   placeholder="••••••••"
                   className={inputClass(
@@ -333,6 +339,14 @@ const AuthPage = ({ mode = "signup" }) => {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </span>
+              {isSignup && (
+                <p
+                  id="auth-password-hint"
+                  className="mt-1.5 text-[11px] text-ink/55"
+                >
+                  {PASSWORD_HINT}
+                </p>
+              )}
               <FormError id="auth-password-error">{errors.password}</FormError>
             </label>
 
