@@ -12,6 +12,7 @@ const StoreContext = createContext(null);
 const USER_KEY = "esweet-user";
 const ACCOUNT_KEY = "esweet-account";
 const CART_KEY = "esweet-cart";
+const ADDRESSES_KEY = "esweet-addresses";
 
 const readJson = (key, fallback) => {
   if (typeof window === "undefined") return fallback;
@@ -39,6 +40,9 @@ export const formatNaira = (amount) =>
 export const StoreProvider = ({ children }) => {
   const [user, setUser] = useState(() => readJson(USER_KEY, null));
   const [cart, setCart] = useState(() => readJson(CART_KEY, {}));
+  const [addresses, setAddresses] = useState(() =>
+    readJson(ADDRESSES_KEY, []),
+  );
 
   useEffect(() => {
     if (user) writeJson(USER_KEY, user);
@@ -50,6 +54,75 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
     writeJson(CART_KEY, cart);
   }, [cart]);
+
+  useEffect(() => {
+    writeJson(ADDRESSES_KEY, addresses);
+  }, [addresses]);
+
+  const addAddress = (newAddr) => {
+    const id = `addr-${Date.now()}`;
+    const makeDefault = Boolean(newAddr.isDefault) || addresses.length === 0;
+    const address = {
+      ...newAddr,
+      id,
+      isDefault: makeDefault,
+    };
+    setAddresses((prev) => {
+      const updated = makeDefault
+        ? prev.map((a) => ({ ...a, isDefault: false }))
+        : [...prev];
+      return [...updated, address];
+    });
+    return address;
+  };
+
+  const updateAddress = (id, updatedFields) => {
+    setAddresses((prev) => {
+      const current = prev.find((addr) => addr.id === id);
+      const keepDefault =
+        Boolean(current?.isDefault) && updatedFields.isDefault === false;
+      const willBeDefault = Boolean(updatedFields.isDefault) || keepDefault;
+      const next = prev.map((addr) => {
+        if (addr.id === id) {
+          return {
+            ...addr,
+            ...updatedFields,
+            isDefault: willBeDefault,
+          };
+        }
+        if (willBeDefault) {
+          return { ...addr, isDefault: false };
+        }
+        return addr;
+      });
+
+      if (next.length > 0 && !next.some((addr) => addr.isDefault)) {
+        next[0] = { ...next[0], isDefault: true };
+      }
+
+      return next;
+    });
+  };
+
+  const deleteAddress = (id) => {
+    setAddresses((prev) => {
+      const target = prev.find((a) => a.id === id);
+      const remaining = prev.filter((a) => a.id !== id);
+      if (target?.isDefault && remaining.length > 0) {
+        remaining[0] = { ...remaining[0], isDefault: true };
+      }
+      return remaining;
+    });
+  };
+
+  const setDefaultAddress = (id) => {
+    setAddresses((prev) =>
+      prev.map((addr) => ({
+        ...addr,
+        isDefault: addr.id === id,
+      })),
+    );
+  };
 
   const addItem = (id) => {
     setCart((current) => ({
@@ -142,6 +215,11 @@ export const StoreProvider = ({ children }) => {
     subtotal,
     packs,
     bagTotal,
+    addresses,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
     addItem,
     removeItem,
     clearCart,

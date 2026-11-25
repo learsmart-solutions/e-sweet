@@ -6,6 +6,12 @@ import SettingsDesktopNav from "../components/settings/SettingsDesktopNav";
 import SettingsSidebar from "../components/settings/SettingsSidebar";
 import SignedOutPrompt from "../components/settings/SignedOutPrompt";
 import SignOutDialog from "../components/settings/SignOutDialog";
+import SavedAddresses, {
+  AddressModal,
+  AddressToast,
+  DeleteAddressDialog,
+  PlusIcon,
+} from "../components/settings/SavedAddresses";
 import {
   BottomSignOutButton,
   LegalInfo,
@@ -29,12 +35,28 @@ const ComingSoon = ({ label }) => (
 );
 
 const Settings = ({ route = SETTINGS_PATH }) => {
-  const { user, logout } = useStore();
+  const {
+    user,
+    logout,
+    addresses = [],
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
+  } = useStore();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [justSignedOut, setJustSignedOut] = useState(false);
+  const [addressModal, setAddressModal] = useState({
+    open: false,
+    mode: "add",
+    address: null,
+  });
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const section = settingsItems.find((item) => item.to === route);
   const isHome = !section;
+  const isAddresses = route === `${SETTINGS_PATH}/addresses`;
   const title = section?.label ?? "Settings";
   const phone = user ? formatPhone(user.phone) : "";
 
@@ -42,6 +64,61 @@ const Settings = ({ route = SETTINGS_PATH }) => {
   // every render.
   const openConfirm = useCallback(() => setConfirmOpen(true), []);
   const closeConfirm = useCallback(() => setConfirmOpen(false), []);
+
+  const showToast = useCallback(
+    (message) => setToast({ message, id: Date.now() }),
+    [],
+  );
+  const clearToast = useCallback(() => setToast(null), []);
+
+  const openAddAddress = useCallback(
+    () => setAddressModal({ open: true, mode: "add", address: null }),
+    [],
+  );
+  const openEditAddress = useCallback(
+    (address) => setAddressModal({ open: true, mode: "edit", address }),
+    [],
+  );
+  const closeAddressModal = useCallback(
+    () => setAddressModal((prev) => ({ ...prev, open: false })),
+    [],
+  );
+  const requestDeleteAddress = useCallback(
+    (address) => setDeleteTarget(address),
+    [],
+  );
+  const cancelDeleteAddress = useCallback(() => setDeleteTarget(null), []);
+
+  const saveAddress = useCallback(
+    (data) => {
+      if (addressModal.mode === "edit" && addressModal.address?.id) {
+        updateAddress(addressModal.address.id, data);
+      } else {
+        addAddress(data);
+      }
+      closeAddressModal();
+      showToast("Address saved");
+    },
+    [addressModal, addAddress, updateAddress, closeAddressModal, showToast],
+  );
+
+  const confirmDeleteAddress = useCallback(
+    (id) => {
+      deleteAddress(id);
+      setDeleteTarget(null);
+      setAddressModal((prev) => ({ ...prev, open: false }));
+      showToast("Address deleted");
+    },
+    [deleteAddress, showToast],
+  );
+
+  const makeDefaultAddress = useCallback(
+    (id) => {
+      setDefaultAddress(id);
+      showToast("Default address updated");
+    },
+    [setDefaultAddress, showToast],
+  );
 
   // Signing out leaves the visitor on this page, which then shows the
   // signed-out prompt (the flow drawn in Figma). The bag is kept.
@@ -81,7 +158,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
           onSignOut={user && isHome ? openConfirm : undefined}
         />
         <main
-          className={`flex flex-col px-4 ${user ? "gap-5 pb-6 pt-2" : "py-6"}`}
+          className={`flex flex-col px-4 ${user ? "gap-5 pb-24 pt-2" : "py-6"}`}
         >
           {!user ? (
             <SignedOutPrompt focusOnMount={justSignedOut} />
@@ -94,6 +171,14 @@ const Settings = ({ route = SETTINGS_PATH }) => {
               <LegalInfo />
               <BottomSignOutButton onClick={openConfirm} />
             </>
+          ) : isAddresses ? (
+            <SavedAddresses
+              addresses={addresses}
+              onAdd={openAddAddress}
+              onEdit={openEditAddress}
+              onDelete={requestDeleteAddress}
+              onSetDefault={makeDefaultAddress}
+            />
           ) : (
             <ComingSoon label={section.label} />
           )}
@@ -119,13 +204,52 @@ const Settings = ({ route = SETTINGS_PATH }) => {
                 <h1 className="min-w-0 flex-1 font-display text-[36px] font-extrabold tracking-[-0.03em] text-ink">
                   {title}
                 </h1>
+                {isAddresses && addresses.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={openAddAddress}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 py-2.5 text-[14px] font-bold text-cream transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <PlusIcon size={16} />
+                    Add address
+                  </button>
+                )}
                 <SignOutButton onClick={openConfirm} size="lg" />
               </header>
-              {isHome ? homeTop : <ComingSoon label={section.label} />}
+              {isHome ? (
+                homeTop
+              ) : isAddresses ? (
+                <SavedAddresses
+                  addresses={addresses}
+                  onAdd={openAddAddress}
+                  onEdit={openEditAddress}
+                  onDelete={requestDeleteAddress}
+                  onSetDefault={makeDefaultAddress}
+                />
+              ) : (
+                <ComingSoon label={section.label} />
+              )}
             </main>
           </div>
         )}
       </div>
+
+      <AddressModal
+        open={addressModal.open}
+        mode={addressModal.mode}
+        initialData={addressModal.address}
+        onClose={closeAddressModal}
+        onSave={saveAddress}
+        onDeleteRequest={requestDeleteAddress}
+      />
+      <DeleteAddressDialog
+        open={Boolean(deleteTarget)}
+        address={deleteTarget}
+        addresses={addresses}
+        onCancel={cancelDeleteAddress}
+        onConfirm={confirmDeleteAddress}
+      />
+      <AddressToast toast={toast} onDone={clearToast} />
 
       <SignOutDialog
         open={confirmOpen && Boolean(user)}
