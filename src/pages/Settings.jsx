@@ -6,6 +6,7 @@ import SettingsDesktopNav from "../components/settings/SettingsDesktopNav";
 import SettingsSidebar from "../components/settings/SettingsSidebar";
 import SignedOutPrompt from "../components/settings/SignedOutPrompt";
 import SignOutDialog from "../components/settings/SignOutDialog";
+import Referral from "../components/settings/Referral";
 import {
   BottomSignOutButton,
   LegalInfo,
@@ -27,6 +28,17 @@ const ComingSoon = ({ label }) => (
     {label} is coming soon.
   </div>
 );
+
+// Section pages that are built. Each one gets `layout` ("phone" or
+// "desktop") because Settings renders both trees.
+const sectionPages = {
+  referral: Referral,
+};
+
+const SectionBody = ({ section, layout }) => {
+  const Page = sectionPages[section.key];
+  return Page ? <Page layout={layout} /> : <ComingSoon label={section.label} />;
+};
 
 const Settings = ({ route = SETTINGS_PATH }) => {
   const { user, logout } = useStore();
@@ -95,7 +107,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
               <BottomSignOutButton onClick={openConfirm} />
             </>
           ) : (
-            <ComingSoon label={section.label} />
+            <SectionBody section={section} layout="phone" />
           )}
         </main>
       </div>
@@ -121,7 +133,11 @@ const Settings = ({ route = SETTINGS_PATH }) => {
                 </h1>
                 <SignOutButton onClick={openConfirm} size="lg" />
               </header>
-              {isHome ? homeTop : <ComingSoon label={section.label} />}
+              {isHome ? (
+                homeTop
+              ) : (
+                <SectionBody section={section} layout="desktop" />
+              )}
             </main>
           </div>
         )}

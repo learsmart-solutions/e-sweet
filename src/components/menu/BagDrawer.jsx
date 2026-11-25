@@ -6,6 +6,7 @@ import WhatsAppIcon from "../WhatsAppIcon";
 import { WHATSAPP_CONTACT_LABEL, whatsappLink } from "../../lib/whatsapp";
 import { DELIVERY_FEE } from "../../lib/delivery";
 import SchedulePicker from "./SchedulePicker";
+import { couponLabel, isCouponReady } from "../../lib/referrals";
 
 const ArrowLeft = () => (
   <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" aria-hidden="true">
@@ -38,16 +39,20 @@ const OptionCard = ({
   title,
   detail,
   radio = false,
+  disabled = false,
   className = "",
 }) => (
   <button
     type="button"
     onClick={onClick}
+    disabled={disabled}
     aria-pressed={selected}
     className={`rounded-xl border px-3.5 py-3 text-left transition-colors ${
       selected
         ? "border-tomato bg-tomato/[0.045] ring-1 ring-tomato"
-        : "border-ink/15 bg-cream-light hover:border-ink/30"
+        : disabled
+          ? "cursor-not-allowed border-ink/10 bg-cream-light opacity-55"
+          : "border-ink/15 bg-cream-light hover:border-ink/30"
     } ${radio ? "flex items-start gap-2.5" : ""} ${className}`}
   >
     {radio && (
@@ -128,6 +133,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
     addItem,
     removeItem,
     clearCart,
+    coupons,
+    redeemCoupon,
   } = useStore();
   const [fulfilment, setFulfilment] = useState("delivery");
   const [when, setWhen] = useState("asap");
@@ -141,12 +148,33 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   const [placedTotal, setPlacedTotal] = useState(0);
   const [placedTime, setPlacedTime] = useState("");
   const [orderCode, setOrderCode] = useState("");
+  // "auto" applies the best coupon the order qualifies for, "none" applies
+  // nothing, otherwise it's the id the customer picked.
+  const [couponChoice, setCouponChoice] = useState("auto");
 
   const isCheckout = step === "checkout";
   const orderTotal = subtotal + packs;
   const deliveryFee =
     isCheckout && fulfilment === "delivery" ? DELIVERY_FEE : 0;
-  const total = orderTotal + deliveryFee;
+
+  // Coupons don't stack: one per order, picked here.
+  const readyCoupons = coupons.filter(isCouponReady);
+  const qualifies = (coupon) => orderTotal >= coupon.minOrder;
+  const bestCoupon =
+    readyCoupons
+      .filter(qualifies)
+      .sort((a, b) => b.amount - a.amount)[0] ?? null;
+  const appliedCoupon =
+    couponChoice === "auto"
+      ? bestCoupon
+      : (readyCoupons.find(
+          (coupon) => coupon.id === couponChoice && qualifies(coupon),
+        ) ?? null);
+  const discount =
+    isCheckout && appliedCoupon
+      ? Math.min(appliedCoupon.amount, orderTotal)
+      : 0;
+  const total = orderTotal - discount + deliveryFee;
   const orderWhatsAppHref = orderCode
     ? whatsappLink(
         `Hi e'sweet ${WHATSAPP_CONTACT_LABEL.toLowerCase()}! I just placed order ${orderCode}. I'd like to confirm it.`,
@@ -203,7 +231,10 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const placeOrder = () => {
+  // The applied coupon and total come in from the click handler. Closing
+  // over them instead makes the React purity lint treat this handler as
+  // render code and flag its Date.now/Math.random calls.
+  const placeOrder = (coupon, orderTotalDue) => {
     if (!cartCount) return;
     if (!user) {
       navigate("/checkout-auth?next=checkout", { scroll: false });
@@ -234,8 +265,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
             minute: "2-digit",
           }),
     );
-    setOrderCode(`ES-${Math.floor(1000 + Math.random() * 9000)}`);
-    setPlacedTotal(total);
+    const code = `ES-${Math.floor(1000 + Math.random() * 9000)}`;
+    if (coupon) redeemCoupon(coupon.id, code);
+    setCouponChoice("auto");
+    setOrderCode(code);
+    setPlacedTotal(orderTotalDue);
     setPlaced(true);
     clearCart();
   };
@@ -584,6 +618,48 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                         )}
                       </section>
 
+                      {readyCoupons.length > 0 && (
+                        <section>
+                          <div className="flex items-baseline justify-between gap-3">
+                            <h3 className="text-[12px] font-bold text-ink">
+                              Coupon
+                            </h3>
+                            <span className="text-[11px] font-medium text-ink/50">
+                              One per order
+                            </span>
+                          </div>
+                          <div className="mt-2 grid gap-2.5">
+                            {readyCoupons.map((coupon) => {
+                              const short = coupon.minOrder - orderTotal;
+                              return (
+                                <OptionCard
+                                  key={coupon.id}
+                                  radio
+                                  selected={appliedCoupon?.id === coupon.id}
+                                  disabled={short > 0}
+                                  onClick={() => setCouponChoice(coupon.id)}
+                                  title={`${formatNaira(coupon.amount)} off · ${couponLabel(coupon)}`}
+                                  detail={
+                                    short > 0
+                                      ? `Add ${formatNaira(short)} more to use this`
+                                      : coupon.minOrder > 0
+                                        ? `On orders over ${formatNaira(coupon.minOrder)}`
+                                        : "Any order"
+                                  }
+                                />
+                              );
+                            })}
+                            <OptionCard
+                              radio
+                              selected={!appliedCoupon}
+                              onClick={() => setCouponChoice("none")}
+                              title="Don't use a coupon"
+                              detail="Save it for another order"
+                            />
+                          </div>
+                        </section>
+                      )}
+
                       <section>
                         <h3 className="text-[12px] font-bold text-ink">
                           Payment
@@ -675,6 +751,12 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                           value={formatNaira(packs)}
                         />
                       )}
+                      {discount > 0 && (
+                        <SummaryLine
+                          label={`Coupon · ${couponLabel(appliedCoupon)}`}
+                          value={`−${formatNaira(discount)}`}
+                        />
+                      )}
                       {isCheckout && (
                         <SummaryLine
                           label="Delivery"
@@ -696,7 +778,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
 
                     <button
                       type="button"
-                      onClick={isCheckout ? placeOrder : goToCheckout}
+                      onClick={
+                        isCheckout
+                          ? () => placeOrder(appliedCoupon, total)
+                          : goToCheckout
+                      }
                       className="mt-4 w-full rounded-xl bg-tomato px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_0_#a5130c,0_10px_20px_rgba(180,30,20,0.16)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
                     >
                       {isCheckout

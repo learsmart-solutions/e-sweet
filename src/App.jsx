@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StoreProvider } from "./context/StoreContext";
-import { useRoute } from "./lib/router";
+import { navigate, useRoute } from "./lib/router";
+import { savePendingReferral } from "./lib/referrals";
 import HomePage from "./pages/HomePage";
 import MenuPage from "./pages/MenuPage";
 import AuthPage from "./pages/AuthPage";
@@ -25,8 +26,18 @@ const isSettingsRoute = (route) =>
 const App = () => {
   const route = useRoute();
   const settingsRoute = isSettingsRoute(route);
+  // A friend's invite link, /r/CODE. Keep the code for signup, then go
+  // there.
+  const inviteCode = route.startsWith("/r/") ? route.slice(3) : null;
   const homeRoute =
-    route === "/" || (!knownRoutes.has(route) && !settingsRoute);
+    route === "/" ||
+    (!knownRoutes.has(route) && !settingsRoute && inviteCode === null);
+
+  useEffect(() => {
+    if (inviteCode === null) return;
+    savePendingReferral(inviteCode);
+    navigate("/signup", { replace: true });
+  }, [inviteCode]);
 
   return (
     <StoreProvider>

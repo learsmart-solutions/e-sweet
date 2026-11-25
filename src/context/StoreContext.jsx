@@ -6,6 +6,13 @@ import React, {
   useState,
 } from "react";
 import { menuItems } from "../data/menu";
+import {
+  grantWelcomeCoupon,
+  makeReferralCode,
+  markCouponUsed,
+  readReferralAccount,
+  takePendingReferral,
+} from "../lib/referrals";
 
 const StoreContext = createContext(null);
 
@@ -39,6 +46,8 @@ export const formatNaira = (amount) =>
 export const StoreProvider = ({ children }) => {
   const [user, setUser] = useState(() => readJson(USER_KEY, null));
   const [cart, setCart] = useState(() => readJson(CART_KEY, {}));
+  // Bumped after a coupon changes so `coupons` re-reads storage.
+  const [couponsVersion, setCouponsVersion] = useState(0);
 
   useEffect(() => {
     if (user) writeJson(USER_KEY, user);
@@ -73,6 +82,14 @@ export const StoreProvider = ({ children }) => {
   const signup = ({ name, email, phone, password }) => {
     const account = { name, email, phone, password };
     writeJson(ACCOUNT_KEY, account);
+
+    // Signed up from a friend's /r/CODE link: their first order gets a
+    // coupon. Your own code doesn't count.
+    const invitedBy = takePendingReferral();
+    if (invitedBy && invitedBy !== makeReferralCode({ name, email })) {
+      grantWelcomeCoupon(email, invitedBy);
+    }
+
     setUser({ name, email, phone });
   };
 
@@ -95,6 +112,21 @@ export const StoreProvider = ({ children }) => {
   };
 
   const logout = () => setUser(null);
+
+  // Every coupon on the account, used ones included. Checkout offers the
+  // unused ones and applies at most one per order.
+  const coupons = useMemo(
+    () => (user ? readReferralAccount(user.email).coupons : []),
+    // couponsVersion is how a redeemed coupon gets picked up.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user, couponsVersion],
+  );
+
+  const redeemCoupon = (couponId, orderCode) => {
+    if (!user) return;
+    markCouponUsed(user.email, couponId, orderCode);
+    setCouponsVersion((value) => value + 1);
+  };
 
   const cartEntries = useMemo(
     () =>
@@ -142,6 +174,8 @@ export const StoreProvider = ({ children }) => {
     subtotal,
     packs,
     bagTotal,
+    coupons,
+    redeemCoupon,
     addItem,
     removeItem,
     clearCart,
