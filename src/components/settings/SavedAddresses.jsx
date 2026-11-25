@@ -1,12 +1,13 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useStore } from "../../context/StoreContext";
+import arrowLeftIcon from "../../assets/icons/settings/arrow-left.svg";
+import FormError from "../FormError";
 
 // Icons matching Figma node 429-10536
 export const HomeIcon = () => (
   <svg
-    width="18"
-    height="18"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="#D7261E"
@@ -22,8 +23,8 @@ export const HomeIcon = () => (
 
 export const WorkIcon = () => (
   <svg
-    width="18"
-    height="18"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="#D7261E"
@@ -103,23 +104,6 @@ export const PlusIcon = ({ size = 16 }) => (
   </svg>
 );
 
-const CloseIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
 const CheckIcon = () => (
   <svg
     width="12"
@@ -159,12 +143,12 @@ const getAddressIcon = (label = "") => {
   const norm = label.toLowerCase().trim();
   if (norm === "home") return <HomeIcon />;
   if (norm === "work") return <WorkIcon />;
-  return <PinIcon stroke="#D7261E" size={18} />;
+  return <PinIcon stroke="#D7261E" size={20} />;
 };
 
 // 1. Empty State
 export const EmptyAddressesState = ({ onAdd }) => (
-  <div className="flex w-full flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-[#E5D7CC] bg-[#FFFBF7]/60 px-6 py-12 text-center sm:py-16">
+  <div className="mt-3.5 flex w-full flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-[#E5D7CC] bg-[#FFFBF7]/60 px-6 py-8 text-center sm:mt-0 sm:py-12">
     <div className="mb-4 grid size-16 place-items-center rounded-full bg-[#F6E8DF]">
       <PinIcon stroke="#D7261E" size={26} />
     </div>
@@ -198,47 +182,45 @@ export const AddressCard = ({
 
   return (
     <div
-      className={`relative flex flex-col justify-between gap-4 rounded-[22px] bg-cream-light p-5 transition-shadow hover:shadow-[0_8px_24px_rgba(30,20,10,0.06)] sm:p-6 ${
-        isDefault ? "border-2 border-tomato" : "border border-[#E9DFD5]"
+      className={`relative flex flex-col gap-2.5 rounded-[22px] bg-cream-light p-4 transition-shadow hover:shadow-[0_8px_24px_rgba(30,20,10,0.06)] sm:p-5 ${
+        isDefault
+          ? "border-2 border-tomato"
+          : "border border-[#EFE4D8] shadow-[0_4px_16px_rgba(30,20,10,0.03)]"
       }`}
     >
-      <div className="flex flex-col gap-3">
-        {/* Card Header */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="grid size-6 place-items-center shrink-0">
-              {getAddressIcon(label)}
-            </span>
-            <span className="font-display text-[18px] font-bold tracking-[-0.01em] text-ink">
-              {label}
-            </span>
-          </div>
-          {isDefault && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-tomato px-2.5 py-1 text-[11px] font-bold tracking-wide text-white">
-              <CheckIcon />
-              Default
-            </span>
-          )}
+      {/* Card Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#FDF0E9]">
+            {getAddressIcon(label)}
+          </span>
+          <span className="font-display text-[18px] font-bold tracking-[-0.01em] text-ink">
+            {label}
+          </span>
         </div>
-
-        {/* Address text */}
-        <p className="text-[14px] font-medium leading-snug text-ink sm:text-[15px]">
-          {fullAddress}
-        </p>
-
-        {/* Landmark / Delivery note */}
-        {landmark && (
-          <div className="flex items-start gap-2 rounded-[14px] bg-[#FAF2EB] px-3.5 py-2.5 text-[13px] leading-relaxed text-muted">
-            <span className="mt-0.5 shrink-0 text-muted/70">
-              <PinIcon stroke="currentColor" size={14} />
-            </span>
-            <span className="min-w-0 flex-1">{landmark}</span>
-          </div>
+        {isDefault && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-tomato px-2.5 py-1 text-[11px] font-bold tracking-wide text-white">
+            <CheckIcon />
+            Default
+          </span>
         )}
       </div>
 
+      {/* Address text */}
+      <p className="text-[15px] leading-snug text-ink">{fullAddress}</p>
+
+      {/* Landmark / Delivery note */}
+      {landmark && (
+        <div className="flex items-start gap-2 rounded-[10px] bg-[#FAF2EB] px-3 py-2 text-[13px] leading-relaxed text-muted">
+          <span className="mt-0.5 shrink-0 text-muted/70">
+            <PinIcon stroke="currentColor" size={14} />
+          </span>
+          <span className="min-w-0 flex-1">{landmark}</span>
+        </div>
+      )}
+
       {/* Card Footer Actions */}
-      <div className="flex items-center justify-between border-t border-sand/70 pt-3">
+      <div className="flex items-center justify-between pt-0.5">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -276,12 +258,10 @@ export const AddAddressCard = ({ onAdd }) => (
   <button
     type="button"
     onClick={onAdd}
-    className="group flex min-h-[175px] w-full flex-col items-center justify-center gap-2 rounded-[22px] border-2 border-dashed border-[#D5C6B7] bg-[#FAF5EE]/50 p-6 text-center transition-all hover:border-ink/50 hover:bg-[#FAF5EE] focus-visible:outline-tomato"
+    className="group flex min-h-[64px] w-full items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-dashed border-[#D5C6B7] bg-transparent px-4 py-4 text-center transition-all hover:border-ink/50 hover:bg-[#FAF5EE] focus-visible:outline-tomato"
   >
-    <span className="grid size-9 place-items-center rounded-full bg-cream transition-transform group-hover:scale-110">
-      <PlusIcon size={20} />
-    </span>
-    <span className="font-display text-[15px] font-extrabold text-ink">
+    <PlusIcon size={18} />
+    <span className="font-display text-[15px] font-bold text-ink">
       Add a new address
     </span>
   </button>
@@ -296,6 +276,7 @@ const AddressModalForm = ({
   onDeleteRequest,
 }) => {
   const isEdit = mode === "edit";
+  const isEditingDefault = Boolean(isEdit && initialData?.isDefault);
 
   const [labelType, setLabelType] = useState(() => {
     const lbl = initialData?.label;
@@ -316,6 +297,7 @@ const AddressModalForm = ({
     Boolean(initialData?.isDefault),
   );
   const [errors, setErrors] = useState({});
+  const defaultOn = isEditingDefault || isDefault;
 
   const modalRef = useRef(null);
   const streetInputRef = useRef(null);
@@ -324,6 +306,12 @@ const AddressModalForm = ({
   const areaId = useId();
   const landmarkId = useId();
   const customLabelId = useId();
+  const streetHelpId = useId();
+  const streetErrorId = useId();
+  const areaErrorId = useId();
+  const customLabelErrorId = useId();
+  const defaultTitleId = useId();
+  const defaultHintId = useId();
 
   // Focus street input on mount, setup focus trap & Esc handler
   useEffect(() => {
@@ -335,6 +323,9 @@ const AddressModalForm = ({
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event) => {
+      // The delete confirmation sits above the editor. Let it own the
+      // keyboard while it is open instead of closing both layers at once.
+      if (document.querySelector('[role="alertdialog"]')) return;
       if (event.key === "Escape") {
         onClose();
         return;
@@ -369,6 +360,18 @@ const AddressModalForm = ({
     };
   }, [onClose]);
 
+  // Return focus to the Add/Edit control that opened the editor. If the
+  // control is gone (for example after deleting the address), leave focus
+  // to the browser so it can fall back to the document body.
+  useEffect(() => {
+    const trigger = document.activeElement;
+    return () => {
+      if (trigger instanceof HTMLElement && trigger.isConnected) {
+        trigger.focus();
+      }
+    };
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -396,13 +399,13 @@ const AddressModalForm = ({
       street: street.trim(),
       area: area.trim(),
       landmark: landmark.trim(),
-      isDefault,
+      isDefault: isEditingDefault ? true : isDefault,
     });
   };
 
   return (
     <motion.div
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-ink/55 p-4 sm:p-6"
+      className="fixed inset-0 z-[120] flex flex-col bg-cream sm:items-center sm:justify-center sm:bg-ink/55 sm:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -419,217 +422,230 @@ const AddressModalForm = ({
         exit={{ opacity: 0, y: 10, scale: 0.98 }}
         transition={{ duration: 0.22, ease: [0.2, 0.75, 0.2, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[92vh] w-full max-w-[500px] flex-col overflow-y-auto rounded-[28px] bg-cream-light p-6 shadow-2xl sm:p-7"
+        className="flex h-full w-full flex-col bg-cream sm:h-auto sm:max-h-[92vh] sm:max-w-[500px] sm:overflow-hidden sm:rounded-[28px] sm:bg-cream-light sm:shadow-2xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-4">
-          <h2
-            id="address-modal-title"
-            className="font-display text-[22px] font-extrabold tracking-[-0.02em] text-ink sm:text-[24px]"
-          >
-            {isEdit ? "Edit address" : "Add address"}
-          </h2>
+        <div className="flex h-16 shrink-0 items-center gap-4 px-4 sm:h-20 sm:px-6">
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
-            className="grid size-9 place-items-center rounded-full border border-sand bg-cream text-ink transition-colors hover:bg-sand/60"
+            aria-label="Back"
+            className="grid size-10 shrink-0 place-items-center rounded-full border-[1.5px] border-ink bg-cream-light transition-colors hover:bg-cream"
           >
-            <CloseIcon />
+            <img src={arrowLeftIcon} alt="" width="20" height="20" />
           </button>
+          <h2
+            id="address-modal-title"
+            className="min-w-0 flex-1 truncate font-display text-[24px] font-extrabold tracking-[-0.02em] text-ink"
+          >
+            {isEdit ? "Edit address" : "Add address"}
+          </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Label selector */}
-          <div>
-            <span className="block text-[13px] font-bold text-ink">
-              Label
-            </span>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              {["Home", "Work", "Other"].map((lbl) => {
-                const isSelected = labelType === lbl;
-                return (
-                  <button
-                    key={lbl}
-                    type="button"
-                    onClick={() => {
-                      setLabelType(lbl);
-                      setErrors((prev) => ({ ...prev, customLabel: "" }));
-                    }}
-                    className={`rounded-full px-5 py-2 text-[13px] font-bold transition-all ${
-                      isSelected
-                        ? "bg-ink text-cream"
-                        : "border border-[#D5C7B8] bg-white text-ink hover:border-ink/60"
-                    }`}
-                  >
-                    {lbl}
-                  </button>
-                );
-              })}
-            </div>
-            {labelType === "Other" && (
-              <div className="mt-2.5">
-                <label htmlFor={customLabelId} className="sr-only">
-                  Custom label name
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex-1 overflow-y-auto px-4 pb-6 pt-8 sm:px-6 sm:pt-2">
+            <div className="flex flex-col gap-4">
+              {/* Label selector */}
+              <div>
+                <span className="block text-[14px] font-bold text-ink">
+                  Label
+                </span>
+                <div className="mt-2 flex flex-wrap gap-2.5">
+                  {["Home", "Work", "Other"].map((lbl) => {
+                    const isSelected = labelType === lbl;
+                    return (
+                      <button
+                        key={lbl}
+                        type="button"
+                        onClick={() => {
+                          setLabelType(lbl);
+                          setErrors((prev) => ({ ...prev, customLabel: "" }));
+                        }}
+                        className={`rounded-full px-5 py-2 text-[13px] font-bold transition-all ${
+                          isSelected
+                            ? "bg-ink text-cream"
+                            : "border-[1.5px] border-ink bg-cream-light text-ink hover:bg-cream"
+                        }`}
+                      >
+                        {lbl}
+                      </button>
+                    );
+                  })}
+                </div>
+                {labelType === "Other" && (
+                  <div className="mt-2.5">
+                    <label htmlFor={customLabelId} className="sr-only">
+                      Custom label name
+                    </label>
+                    <input
+                      id={customLabelId}
+                      type="text"
+                      placeholder="e.g. Mum's place, Gym"
+                      value={customLabel}
+                      onChange={(e) => {
+                        setCustomLabel(e.target.value);
+                        setErrors((prev) => ({ ...prev, customLabel: "" }));
+                      }}
+                      aria-invalid={Boolean(errors.customLabel)}
+                      aria-describedby={
+                        errors.customLabel ? customLabelErrorId : undefined
+                      }
+                      className="w-full rounded-[16px] border-[1.5px] border-ink bg-cream-light px-4 py-3.5 text-[15px] text-ink placeholder:text-muted/60 focus:border-tomato focus:outline-none focus:ring-1 focus:ring-tomato"
+                    />
+                    <FormError id={customLabelErrorId}>
+                      {errors.customLabel}
+                    </FormError>
+                  </div>
+                )}
+              </div>
+
+              {/* Street address */}
+              <div>
+                <label
+                  htmlFor={streetId}
+                  className="block text-[14px] font-bold text-ink"
+                >
+                  Street address
                 </label>
                 <input
-                  id={customLabelId}
+                  ref={streetInputRef}
+                  id={streetId}
                   type="text"
-                  placeholder="e.g. Mum's place, Gym"
-                  value={customLabel}
+                  placeholder="e.g. 12 Adeola Street"
+                  value={street}
                   onChange={(e) => {
-                    setCustomLabel(e.target.value);
-                    setErrors((prev) => ({ ...prev, customLabel: "" }));
+                    setStreet(e.target.value);
+                    setErrors((prev) => ({ ...prev, street: "" }));
                   }}
-                  className="w-full rounded-[14px] border border-[#D5C7B8] bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:border-tomato focus:outline-none focus:ring-1 focus:ring-tomato"
+                  aria-invalid={Boolean(errors.street)}
+                  aria-describedby={
+                    [streetHelpId, errors.street ? streetErrorId : null]
+                      .filter(Boolean)
+                      .join(" ") || undefined
+                  }
+                  className={`mt-2 w-full rounded-[16px] border-[1.5px] bg-cream-light px-4 py-3.5 text-[15px] text-ink placeholder:text-muted/60 focus:outline-none focus:ring-1 ${
+                    errors.street
+                      ? "border-tomato focus:border-tomato focus:ring-tomato"
+                      : "border-ink focus:border-tomato focus:ring-tomato"
+                  }`}
                 />
-                {errors.customLabel && (
-                  <p className="mt-1 text-[12px] font-semibold text-tomato">
-                    {errors.customLabel}
-                  </p>
-                )}
+                <p id={streetHelpId} className="mt-1.5 text-[13px] text-muted">
+                  House number and street
+                </p>
+                <FormError id={streetErrorId}>{errors.street}</FormError>
+              </div>
+
+              {/* Area / town */}
+              <div>
+                <label
+                  htmlFor={areaId}
+                  className="block text-[14px] font-bold text-ink"
+                >
+                  Area / town
+                </label>
+                <input
+                  id={areaId}
+                  type="text"
+                  placeholder="e.g. Sango Ota, Ogun State"
+                  value={area}
+                  onChange={(e) => {
+                    setArea(e.target.value);
+                    setErrors((prev) => ({ ...prev, area: "" }));
+                  }}
+                  aria-invalid={Boolean(errors.area)}
+                  aria-describedby={errors.area ? areaErrorId : undefined}
+                  className={`mt-2 w-full rounded-[16px] border-[1.5px] bg-cream-light px-4 py-3.5 text-[15px] text-ink placeholder:text-muted/60 focus:outline-none focus:ring-1 ${
+                    errors.area
+                      ? "border-tomato focus:border-tomato focus:ring-tomato"
+                      : "border-ink focus:border-tomato focus:ring-tomato"
+                  }`}
+                />
+                <FormError id={areaErrorId}>{errors.area}</FormError>
+              </div>
+
+              {/* Landmark / Delivery notes */}
+              <div>
+                <label
+                  htmlFor={landmarkId}
+                  className="block text-[14px] font-bold text-ink"
+                >
+                  Landmark / delivery notes
+                </label>
+                <textarea
+                  id={landmarkId}
+                  rows={3}
+                  placeholder="e.g. Blue gate opposite the pharmacy. Call when near."
+                  value={landmark}
+                  onChange={(e) => setLandmark(e.target.value)}
+                  className="mt-2 w-full resize-none rounded-[16px] border-[1.5px] border-ink bg-cream-light px-4 py-3.5 text-[15px] text-ink placeholder:text-muted/60 focus:border-tomato focus:outline-none focus:ring-1 focus:ring-tomato"
+                />
+                <p className="mt-1.5 flex items-center gap-1.5 text-[13px] text-muted">
+                  <span className="text-muted/80">
+                    <RiderIcon />
+                  </span>
+                  Riders rely on this to find you.
+                </p>
+              </div>
+
+              {/* Set as default toggle */}
+              <div className="flex items-center justify-between gap-4 rounded-[16px] bg-cream-light px-4 py-3.5 sm:bg-[#FAF2EB]">
+                <span className="flex flex-col gap-0.5">
+                  <span
+                    id={defaultTitleId}
+                    className="text-[15px] font-bold text-ink"
+                  >
+                    Set as default address
+                  </span>
+                  <span id={defaultHintId} className="text-[13px] text-muted">
+                    {isEditingDefault
+                      ? "To change your default, set another address as default."
+                      : "Used first at checkout"}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={defaultOn}
+                  aria-labelledby={defaultTitleId}
+                  aria-describedby={defaultHintId}
+                  disabled={isEditingDefault}
+                  onClick={() => {
+                    if (!isEditingDefault) setIsDefault((prev) => !prev);
+                  }}
+                  className={`relative inline-flex h-7 w-12 shrink-0 rounded-full p-1 transition-colors duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-tomato ${
+                    isEditingDefault ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                  } ${defaultOn ? "bg-tomato" : "bg-[#D1C2B4]"}`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out ${
+                      defaultOn ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {isEdit && (
+              <div className="mt-24 flex justify-center pb-2 sm:mt-8">
+                <button
+                  type="button"
+                  onClick={() => onDeleteRequest(initialData)}
+                  className="inline-flex items-center gap-2 text-[15px] font-bold text-tomato transition-colors hover:text-[#bf1f18]"
+                >
+                  <TrashIcon />
+                  Delete this address
+                </button>
               </div>
             )}
           </div>
 
-          {/* Street & Area */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor={streetId}
-                className="block text-[13px] font-bold text-ink"
-              >
-                Street address
-              </label>
-              <input
-                ref={streetInputRef}
-                id={streetId}
-                type="text"
-                placeholder="e.g. 20A Idiroko Road"
-                value={street}
-                onChange={(e) => {
-                  setStreet(e.target.value);
-                  setErrors((prev) => ({ ...prev, street: "" }));
-                }}
-                className={`mt-1.5 w-full rounded-[14px] border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:outline-none focus:ring-1 ${
-                  errors.street
-                    ? "border-tomato focus:border-tomato focus:ring-tomato"
-                    : "border-[#D5C7B8] focus:border-tomato focus:ring-tomato"
-                }`}
-              />
-              {errors.street && (
-                <p className="mt-1 text-[12px] font-semibold text-tomato">
-                  {errors.street}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor={areaId}
-                className="block text-[13px] font-bold text-ink"
-              >
-                Area / town
-              </label>
-              <input
-                id={areaId}
-                type="text"
-                placeholder="e.g. Sango Otta, Ogun State"
-                value={area}
-                onChange={(e) => {
-                  setArea(e.target.value);
-                  setErrors((prev) => ({ ...prev, area: "" }));
-                }}
-                className={`mt-1.5 w-full rounded-[14px] border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:outline-none focus:ring-1 ${
-                  errors.area
-                    ? "border-tomato focus:border-tomato focus:ring-tomato"
-                    : "border-[#D5C7B8] focus:border-tomato focus:ring-tomato"
-                }`}
-              />
-              {errors.area && (
-                <p className="mt-1 text-[12px] font-semibold text-tomato">
-                  {errors.area}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Landmark / Delivery notes */}
-          <div>
-            <label
-              htmlFor={landmarkId}
-              className="block text-[13px] font-bold text-ink"
-            >
-              Landmark / delivery notes
-            </label>
-            <input
-              id={landmarkId}
-              type="text"
-              placeholder="e.g. Blue gate opposite the pharmacy. Call when near."
-              value={landmark}
-              onChange={(e) => setLandmark(e.target.value)}
-              className="mt-1.5 w-full rounded-[14px] border border-[#D5C7B8] bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted/60 focus:border-tomato focus:outline-none focus:ring-1 focus:ring-tomato"
-            />
-            <p className="mt-1.5 flex items-center gap-1.5 text-[12px] text-muted">
-              <span className="text-muted/80">
-                <RiderIcon />
-              </span>
-              Riders rely on this to find you.
-            </p>
-          </div>
-
-          {/* Set as default toggle */}
-          <div className="flex items-center justify-between rounded-[16px] bg-[#FAF2EB] px-4 py-3">
-            <span className="text-[14px] font-bold text-ink">
-              Set as default address
-            </span>
+          <div className="shrink-0 border-t border-[#F0E4D6] bg-cream px-4 py-4 sm:border-0 sm:bg-transparent sm:px-6 sm:pb-6">
             <button
-              type="button"
-              role="switch"
-              aria-checked={isDefault}
-              onClick={() => setIsDefault((prev) => !prev)}
-              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full p-1 transition-colors duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-tomato ${
-                isDefault ? "bg-tomato" : "bg-[#D1C2B4]"
-              }`}
+              type="submit"
+              className="w-full rounded-full bg-tomato px-6 py-3.5 text-[16px] font-bold text-white shadow-[0_10px_20px_rgba(215,38,30,0.35)] transition-transform hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
             >
-              <span
-                className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out ${
-                  isDefault ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
+              Save address
             </button>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="mt-2 flex items-center justify-between pt-2">
-            {isEdit ? (
-              <button
-                type="button"
-                onClick={() => onDeleteRequest(initialData)}
-                className="inline-flex items-center gap-1.5 text-[14px] font-bold text-tomato transition-colors hover:text-[#bf1f18]"
-              >
-                <TrashIcon />
-                Delete
-              </button>
-            ) : (
-              <div />
-            )}
-
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-full border-[1.5px] border-ink bg-transparent px-5 py-2.5 text-[14px] font-bold text-ink transition-colors hover:bg-cream"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-full bg-tomato px-6 py-2.5 text-[14px] font-bold text-white shadow-[0_8px_16px_rgba(215,38,30,0.35)] transition-transform hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
-              >
-                Save address
-              </button>
-            </div>
           </div>
         </form>
       </motion.div>
@@ -674,6 +690,7 @@ export const DeleteAddressDialog = ({
   useEffect(() => {
     if (!open) return undefined;
 
+    const previouslyFocused = document.activeElement;
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
     cancelBtnRef.current?.focus();
@@ -707,6 +724,9 @@ export const DeleteAddressDialog = ({
     return () => {
       document.body.style.overflow = overflow;
       window.removeEventListener("keydown", onKeyDown);
+      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+        previouslyFocused.focus();
+      }
     };
   }, [open, onCancel]);
 
@@ -764,21 +784,21 @@ export const DeleteAddressDialog = ({
               {helperDesc}
             </p>
 
-            <div className="mt-2 flex w-full items-center justify-center gap-3">
+            <div className="mt-2 flex w-full flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => onConfirm(address.id)}
+                className="w-full rounded-full bg-tomato py-3.5 text-[14px] font-bold text-white shadow-[0_8px_16px_rgba(215,38,30,0.35)] transition-transform hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
+              >
+                Delete address
+              </button>
               <button
                 ref={cancelBtnRef}
                 type="button"
                 onClick={onCancel}
-                className="flex-1 rounded-full border-[1.5px] border-ink bg-transparent py-3 text-[14px] font-bold text-ink transition-colors hover:bg-cream"
+                className="w-full rounded-full border-[1.5px] border-ink bg-transparent py-3.5 text-[14px] font-bold text-ink transition-colors hover:bg-cream"
               >
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => onConfirm(address.id)}
-                className="flex-1 rounded-full bg-tomato py-3 text-[14px] font-bold text-white shadow-[0_8px_16px_rgba(215,38,30,0.35)] transition-transform hover:-translate-y-0.5 hover:bg-[#bf1f18] active:translate-y-0"
-              >
-                Delete address
               </button>
             </div>
           </motion.div>
@@ -788,110 +808,66 @@ export const DeleteAddressDialog = ({
   );
 };
 
-// 6. Main Container Component
-const SavedAddresses = ({ openModalRef }) => {
-  const {
-    addresses = [],
-    addAddress,
-    updateAddress,
-    deleteAddress,
-    setDefaultAddress,
-  } = useStore();
-
-  const [modalState, setModalState] = useState({
-    open: false,
-    mode: "add",
-    address: null,
-  });
-
-  const [deleteDialogState, setDeleteDialogState] = useState({
-    open: false,
-    address: null,
-  });
-
-  const openAddModal = () => {
-    setModalState({ open: true, mode: "add", address: null });
-  };
-
-  const openEditModal = (address) => {
-    setModalState({ open: true, mode: "edit", address });
-  };
-
-  const closeModal = () => {
-    setModalState((prev) => ({ ...prev, open: false }));
-  };
-
-  const openDeleteDialog = (address) => {
-    closeModal();
-    setDeleteDialogState({ open: true, address });
-  };
-
-  const closeDeleteDialog = () => {
-    setDeleteDialogState({ open: false, address: null });
-  };
-
-  const handleSaveAddress = (data) => {
-    if (modalState.mode === "edit" && modalState.address?.id) {
-      updateAddress(modalState.address.id, data);
-    } else {
-      addAddress(data);
-    }
-    closeModal();
-  };
-
-  const handleConfirmDelete = (id) => {
-    deleteAddress(id);
-    closeDeleteDialog();
-  };
-
+// 6. Saved toast
+export const AddressToast = ({ toast, onDone }) => {
   useEffect(() => {
-    if (openModalRef) {
-      openModalRef.current = openAddModal;
-    }
-    return () => {
-      if (openModalRef) openModalRef.current = null;
-    };
-  }, [openModalRef]);
+    if (!toast) return undefined;
+    const timer = setTimeout(onDone, 2600);
+    return () => clearTimeout(timer);
+  }, [toast, onDone]);
 
+  return (
+    <AnimatePresence>
+      {toast && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[140] flex justify-center px-4">
+          <motion.div
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.2, 0.75, 0.2, 1] }}
+            className="flex items-center gap-2.5 rounded-full bg-ink px-4 py-2.5 text-[13px] font-semibold text-cream shadow-[0_12px_30px_rgba(30,20,10,0.28)]"
+          >
+            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[#22C55E] text-white">
+              <CheckIcon />
+            </span>
+            {toast.message}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// 7. Main Container Component
+const SavedAddresses = ({
+  addresses = [],
+  onAdd,
+  onEdit,
+  onDelete,
+  onSetDefault,
+}) => {
   const isEmpty = addresses.length === 0;
 
   return (
     <div className="w-full">
       {isEmpty ? (
-        <EmptyAddressesState onAdd={openAddModal} />
+        <EmptyAddressesState onAdd={onAdd} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-5">
           {addresses.map((address) => (
             <AddressCard
               key={address.id}
               address={address}
-              onEdit={openEditModal}
-              onDelete={openDeleteDialog}
-              onSetDefault={setDefaultAddress}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onSetDefault={onSetDefault}
             />
           ))}
-          <AddAddressCard onAdd={openAddModal} />
+          <AddAddressCard onAdd={onAdd} />
         </div>
       )}
-
-      {/* Add / Edit Modal */}
-      <AddressModal
-        open={modalState.open}
-        mode={modalState.mode}
-        initialData={modalState.address}
-        onClose={closeModal}
-        onSave={handleSaveAddress}
-        onDeleteRequest={openDeleteDialog}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <DeleteAddressDialog
-        open={deleteDialogState.open}
-        address={deleteDialogState.address}
-        addresses={addresses}
-        onCancel={closeDeleteDialog}
-        onConfirm={handleConfirmDelete}
-      />
     </div>
   );
 };

@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import { menuItems } from "../data/menu";
-import { initialAddresses } from "../data/addresses";
 
 const StoreContext = createContext(null);
 
@@ -42,7 +41,7 @@ export const StoreProvider = ({ children }) => {
   const [user, setUser] = useState(() => readJson(USER_KEY, null));
   const [cart, setCart] = useState(() => readJson(CART_KEY, {}));
   const [addresses, setAddresses] = useState(() =>
-    readJson(ADDRESSES_KEY, initialAddresses),
+    readJson(ADDRESSES_KEY, []),
   );
 
   useEffect(() => {
@@ -79,16 +78,29 @@ export const StoreProvider = ({ children }) => {
 
   const updateAddress = (id, updatedFields) => {
     setAddresses((prev) => {
-      const willBeDefault = Boolean(updatedFields.isDefault);
-      return prev.map((addr) => {
+      const current = prev.find((addr) => addr.id === id);
+      const keepDefault =
+        Boolean(current?.isDefault) && updatedFields.isDefault === false;
+      const willBeDefault = Boolean(updatedFields.isDefault) || keepDefault;
+      const next = prev.map((addr) => {
         if (addr.id === id) {
-          return { ...addr, ...updatedFields };
+          return {
+            ...addr,
+            ...updatedFields,
+            isDefault: willBeDefault,
+          };
         }
         if (willBeDefault) {
           return { ...addr, isDefault: false };
         }
         return addr;
       });
+
+      if (next.length > 0 && !next.some((addr) => addr.isDefault)) {
+        next[0] = { ...next[0], isDefault: true };
+      }
+
+      return next;
     });
   };
 

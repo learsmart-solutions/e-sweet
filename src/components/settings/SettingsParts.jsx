@@ -12,7 +12,6 @@ export const PhoneTopBar = ({
   title = "Settings",
   backTo = "/menu",
   onSignOut,
-  rightAction,
 }) => (
   <div className="flex h-16 items-center gap-3 px-4">
     <Link
@@ -25,7 +24,6 @@ export const PhoneTopBar = ({
     <h1 className="min-w-0 flex-1 truncate font-display text-[24px] font-extrabold tracking-[-0.02em] text-ink">
       {title}
     </h1>
-    {rightAction}
     {onSignOut && <SignOutButton onClick={onSignOut} />}
   </div>
 );
