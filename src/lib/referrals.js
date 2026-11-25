@@ -109,7 +109,12 @@ export const couponLabel = (coupon) =>
     : `${coupon.friendName || "A friend"} ordered`;
 
 // A new account that signed up with a friend's code gets one coupon for
-// its first order.
+// its first order over FRIEND_MIN_ORDER.
+//
+// TODO (API): the prototype trusts any well-formed code, so /r/AAA-222
+// earns a coupon even though nobody owns that code. The server must check
+// that the code belongs to a real account, isn't the new account's own,
+// and that each person (not just each email) gets the welcome coupon once.
 export const grantWelcomeCoupon = (email, fromCode) =>
   updateAccount(email, (account) =>
     account.coupons.some((coupon) => coupon.source === "welcome")

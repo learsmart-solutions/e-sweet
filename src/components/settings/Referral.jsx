@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { formatNaira, useStore } from "../../context/StoreContext";
-import useMediaQuery from "../../hooks/useMediaQuery";
 import useOnlineStatus from "../../hooks/useOnlineStatus";
 import {
   FRIEND_MIN_ORDER,
@@ -26,9 +25,6 @@ import usersIcon from "../../assets/icons/settings/users-40.svg";
 // The reward is a coupon, not a running balance: coupons never stack, so an
 // order can use one coupon. The copy here says "coupon" where Figma says
 // "credit" for that reason.
-
-// Matches Tailwind's `lg`, where Settings switches to the desktop layout.
-const DESKTOP_QUERY = "(min-width: 1024px)";
 
 const REWARD = formatNaira(REFERRAL_REWARD);
 const MIN_ORDER = formatNaira(FRIEND_MIN_ORDER);
@@ -140,8 +136,8 @@ const Hero = ({ desktop }) => (
       Give {REWARD}, get {REWARD}
     </h2>
     <p className={desktop ? "text-[15px] leading-[22px]" : "text-[14px] leading-5"}>
-      Your friend gets {REWARD} off their first order. You get a {REWARD}{" "}
-      coupon when they order.
+      Your friend gets {REWARD} off their first order over {MIN_ORDER}. You
+      get a {REWARD} coupon when they order.
     </p>
   </section>
 );
@@ -664,16 +660,12 @@ const ReferralContent = ({ user, desktop }) => {
   );
 };
 
-// Settings renders a phone tree and a desktop tree and hides one with CSS.
-// Only the visible copy mounts the page, so there is one request and one
-// toast.
+// Settings' SectionBody mounts only the visible layout's copy, so there is
+// one request and one toast.
 const Referral = ({ layout }) => {
   const { user } = useStore();
-  const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  const desktop = layout === "desktop";
-
-  if (!user || isDesktop !== desktop) return null;
-  return <ReferralContent user={user} desktop={desktop} />;
+  if (!user) return null;
+  return <ReferralContent user={user} desktop={layout === "desktop"} />;
 };
 
 export default Referral;
