@@ -12,8 +12,9 @@ import giftIcon from "../../assets/icons/settings/gift-18.svg";
 //
 // Only benefits with `ready: true` are shown, so the page never promises a
 // feature customers can't use yet. Flip each one on as its section ships.
-// TODO: the ₦500 referral reward is a placeholder in the design (open
-// question 1 in Figma). Confirm the amount before turning referral on.
+// TODO (API): the ₦500 amount is confirmed, but "for every friend" means the
+// referrer's own coupon, which can only be granted once the referral API
+// records friends' orders. Keep this off until then.
 const benefits = [
   {
     icon: receiptIcon,
@@ -30,7 +31,7 @@ const benefits = [
   {
     icon: giftIcon,
     label: "Earn ₦500 for every friend",
-    short: "Earn ₦500 credit",
+    short: "Earn a ₦500 coupon",
     ready: false,
   },
 ];

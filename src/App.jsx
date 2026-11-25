@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StoreProvider } from "./context/StoreContext";
+import { StoreProvider, useStore } from "./context/StoreContext";
 import { navigate, useRoute } from "./lib/router";
 import { savePendingReferral } from "./lib/referrals";
 import HomePage from "./pages/HomePage";
@@ -23,24 +23,36 @@ const knownRoutes = new Set([
 const isSettingsRoute = (route) =>
   route === "/settings" || route.startsWith("/settings/");
 
+// A friend's invite link, /r/CODE. New visitors keep the code for signup
+// and go there; someone already signed in has an account, so the invite
+// doesn't apply and they go to the menu.
+const InviteRedirect = ({ code }) => {
+  const { user } = useStore();
+  const signedIn = Boolean(user);
+
+  useEffect(() => {
+    if (signedIn) {
+      navigate("/menu", { replace: true });
+      return;
+    }
+    savePendingReferral(code);
+    navigate("/signup", { replace: true });
+  }, [code, signedIn]);
+
+  return null;
+};
+
 const App = () => {
   const route = useRoute();
   const settingsRoute = isSettingsRoute(route);
-  // A friend's invite link, /r/CODE. Keep the code for signup, then go
-  // there.
   const inviteCode = route.startsWith("/r/") ? route.slice(3) : null;
   const homeRoute =
     route === "/" ||
     (!knownRoutes.has(route) && !settingsRoute && inviteCode === null);
 
-  useEffect(() => {
-    if (inviteCode === null) return;
-    savePendingReferral(inviteCode);
-    navigate("/signup", { replace: true });
-  }, [inviteCode]);
-
   return (
     <StoreProvider>
+      {inviteCode !== null && <InviteRedirect code={inviteCode} />}
       {route === "/menu" && <MenuPage />}
       {route === "/bag" && <MenuPage bagOpen bagStep="order" />}
       {route === "/checkout" && <MenuPage bagOpen bagStep="checkout" />}

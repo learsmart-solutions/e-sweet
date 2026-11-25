@@ -6,7 +6,11 @@ import WhatsAppIcon from "../WhatsAppIcon";
 import { WHATSAPP_CONTACT_LABEL, whatsappLink } from "../../lib/whatsapp";
 import { DELIVERY_FEE } from "../../lib/delivery";
 import SchedulePicker from "./SchedulePicker";
-import { couponLabel, isCouponReady } from "../../lib/referrals";
+import {
+  couponLabel,
+  isCouponReady,
+  minOrderText,
+} from "../../lib/referrals";
 
 const ArrowLeft = () => (
   <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" aria-hidden="true">
@@ -643,7 +647,7 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
                                     short > 0
                                       ? `Add ${formatNaira(short)} more to use this`
                                       : coupon.minOrder > 0
-                                        ? `On orders over ${formatNaira(coupon.minOrder)}`
+                                        ? `On orders of ${minOrderText(coupon.minOrder)}`
                                         : "Any order"
                                   }
                                 />

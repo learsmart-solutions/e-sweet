@@ -8,10 +8,16 @@
 // friends are kept in localStorage per account, and `fetchReferral` acts
 // like the network request the page will make once the API exists.
 
-// TODO: both amounts are placeholders in the design (Figma open question 1).
-// Confirm them before launch.
+import { formatNaira } from "./money";
+
+// Confirmed 25 Nov 2026: ₦500 off, ₦3,000 minimum order.
 export const REFERRAL_REWARD = 500;
 export const FRIEND_MIN_ORDER = 3000;
+
+// The order total counts when it's at least the minimum (checkout uses
+// `>=`), so the wording is "₦3,000 or more", never "over ₦3,000". Every
+// place that shows a minimum uses this so the two can't drift apart.
+export const minOrderText = (amount) => `${formatNaira(amount)} or more`;
 
 const STORE_KEY = "esweet-referrals";
 const PENDING_KEY = "esweet-pending-referral";
@@ -109,7 +115,7 @@ export const couponLabel = (coupon) =>
     : `${coupon.friendName || "A friend"} ordered`;
 
 // A new account that signed up with a friend's code gets one coupon for
-// its first order over FRIEND_MIN_ORDER.
+// a first order of FRIEND_MIN_ORDER or more.
 //
 // TODO (API): the prototype trusts any well-formed code, so /r/AAA-222
 // earns a coupon even though nobody owns that code. The server must check

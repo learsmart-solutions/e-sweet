@@ -41,8 +41,8 @@ const writeJson = (key, value) => {
   }
 };
 
-export const formatNaira = (amount) =>
-  `₦${Number(amount || 0).toLocaleString("en-NG")}`;
+// Lives in lib/money so non-React modules (lib/referrals) can use it too.
+export { formatNaira } from "../lib/money";
 
 export const StoreProvider = ({ children }) => {
   const [user, setUser] = useState(() => readJson(USER_KEY, null));

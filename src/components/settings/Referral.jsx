@@ -7,6 +7,7 @@ import {
   couponLabel,
   fetchReferral,
   isCouponReady,
+  minOrderText,
 } from "../../lib/referrals";
 import { NoInternet, OfflineBanner } from "./OfflineState";
 import Toast from "./Toast";
@@ -27,7 +28,7 @@ import usersIcon from "../../assets/icons/settings/users-40.svg";
 // "credit" for that reason.
 
 const REWARD = formatNaira(REFERRAL_REWARD);
-const MIN_ORDER = formatNaira(FRIEND_MIN_ORDER);
+const MIN_ORDER = minOrderText(FRIEND_MIN_ORDER);
 const AVATAR_COLORS = ["bg-sun", "bg-sky", "bg-sand"];
 
 const eyebrowClass =
@@ -110,7 +111,7 @@ const copyText = async (text) => {
 
 const shareLink = ({ code, link }) =>
   `https://wa.me/?text=${encodeURIComponent(
-    `Get ${REWARD} off your first e'sweet order over ${MIN_ORDER}. Sign up with my code ${code}: ${link}`,
+    `Get ${REWARD} off your first e'sweet order of ${MIN_ORDER}. Sign up with my code ${code}: ${link}`,
   )}`;
 
 const displayLink = (link) => link.replace(/^https?:\/\//, "");
@@ -136,7 +137,7 @@ const Hero = ({ desktop }) => (
       Give {REWARD}, get {REWARD}
     </h2>
     <p className={desktop ? "text-[15px] leading-[22px]" : "text-[14px] leading-5"}>
-      Your friend gets {REWARD} off their first order over {MIN_ORDER}. You
+      Your friend gets {REWARD} off their first order of {MIN_ORDER}. You
       get a {REWARD} coupon when they order.
     </p>
   </section>
@@ -278,8 +279,8 @@ const HowItWorks = ({ desktop }) => {
     {
       title: "Your friend orders",
       body: desktop
-        ? `${REWARD} off their first order over ${MIN_ORDER}.`
-        : `They get ${REWARD} off their first order over ${MIN_ORDER}.`,
+        ? `${REWARD} off their first order of ${MIN_ORDER}.`
+        : `They get ${REWARD} off their first order of ${MIN_ORDER}.`,
     },
     {
       title: "You both get rewarded",
@@ -452,10 +453,10 @@ const Coupons = ({ coupons }) => {
                 >
                   {formatNaira(coupon.amount)} off
                 </span>
-                <span className="truncate text-[13px] text-muted">
+                <span className="text-[13px] leading-[18px] text-muted">
                   {couponLabel(coupon)} ·{" "}
                   {coupon.minOrder > 0
-                    ? `orders over ${formatNaira(coupon.minOrder)}`
+                    ? `orders of ${minOrderText(coupon.minOrder)}`
                     : "any order"}
                 </span>
               </span>
