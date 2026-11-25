@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useSyncExternalStore } from "react";
 
 const normalizePath = (path) => {
   if (!path) return "/";
@@ -43,21 +43,20 @@ export const navigate = (to, { replace = false, scroll = true } = {}) => {
   }
 };
 
-export const useRoute = () => {
-  const [path, setPath] = useState(getPath);
-
-  useEffect(() => {
-    const update = () => setPath(getPath());
-    listeners.add(update);
-    window.addEventListener("popstate", update);
-    return () => {
-      listeners.delete(update);
-      window.removeEventListener("popstate", update);
-    };
-  }, []);
-
-  return path;
+const subscribe = (onChange) => {
+  listeners.add(onChange);
+  window.addEventListener("popstate", onChange);
+  return () => {
+    listeners.delete(onChange);
+    window.removeEventListener("popstate", onChange);
+  };
 };
+
+// useSyncExternalStore re-reads the path after subscribing, so a navigate()
+// fired from a child's effect during the first render (effects run child
+// first, before this hook has subscribed) is still picked up.
+export const useRoute = () =>
+  useSyncExternalStore(subscribe, getPath, () => "/");
 
 export const Link = ({
   to,

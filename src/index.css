@@ -16,6 +16,9 @@
   --color-tomato: #d7261e;
   --color-gold: #ffb400;
   --color-muted: #6e625a;
+  --color-leaf: #2f7d4a;
+  --color-sky: #b7e0f5;
+  --color-sun: #ffb627;
 
   --animate-marquee: marquee 30s linear infinite;
   --animate-orbit: orbit 90s linear infinite;

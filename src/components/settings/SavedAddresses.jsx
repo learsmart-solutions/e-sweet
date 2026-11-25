@@ -808,38 +808,6 @@ export const DeleteAddressDialog = ({
   );
 };
 
-// 6. Saved toast
-export const AddressToast = ({ toast, onDone }) => {
-  useEffect(() => {
-    if (!toast) return undefined;
-    const timer = setTimeout(onDone, 2600);
-    return () => clearTimeout(timer);
-  }, [toast, onDone]);
-
-  return (
-    <AnimatePresence>
-      {toast && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[140] flex justify-center px-4">
-          <motion.div
-            role="status"
-            aria-live="polite"
-            initial={{ opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.2, 0.75, 0.2, 1] }}
-            className="flex items-center gap-2.5 rounded-full bg-ink px-4 py-2.5 text-[13px] font-semibold text-cream shadow-[0_12px_30px_rgba(30,20,10,0.28)]"
-          >
-            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[#22C55E] text-white">
-              <CheckIcon />
-            </span>
-            {toast.message}
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
-};
-
 // 7. Main Container Component
 const SavedAddresses = ({
   addresses = [],

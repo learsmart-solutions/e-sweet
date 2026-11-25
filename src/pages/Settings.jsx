@@ -6,12 +6,14 @@ import SettingsDesktopNav from "../components/settings/SettingsDesktopNav";
 import SettingsSidebar from "../components/settings/SettingsSidebar";
 import SignedOutPrompt from "../components/settings/SignedOutPrompt";
 import SignOutDialog from "../components/settings/SignOutDialog";
+import Referral from "../components/settings/Referral";
 import SavedAddresses, {
   AddressModal,
-  AddressToast,
   DeleteAddressDialog,
   PlusIcon,
 } from "../components/settings/SavedAddresses";
+import Toast from "../components/settings/Toast";
+import useMediaQuery from "../hooks/useMediaQuery";
 import {
   BottomSignOutButton,
   LegalInfo,
@@ -33,6 +35,27 @@ const ComingSoon = ({ label }) => (
     {label} is coming soon.
   </div>
 );
+
+// Section pages that are built, by section key.
+const sectionPages = {
+  addresses: SavedAddresses,
+  referral: Referral,
+};
+
+// Matches Tailwind's `lg`, where Settings switches to the desktop layout.
+const DESKTOP_QUERY = "(min-width: 1024px)";
+
+// Settings renders a phone tree and a desktop tree and hides one with CSS.
+// Only the visible copy mounts a section page, so a page never runs twice
+// (one request, one toast) and nothing can open inside the hidden tree.
+// `pageProps[section.key]` is passed through to that page.
+const SectionBody = ({ section, layout, pageProps = {} }) => {
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const Page = sectionPages[section.key];
+  if (!Page) return <ComingSoon label={section.label} />;
+  if (isDesktop !== (layout === "desktop")) return null;
+  return <Page layout={layout} {...pageProps[section.key]} />;
+};
 
 const Settings = ({ route = SETTINGS_PATH }) => {
   const {
@@ -132,6 +155,19 @@ const Settings = ({ route = SETTINGS_PATH }) => {
   // they are, and the red card will show.
   const activeOrder = null;
 
+  // Props for section pages that need state owned here. Saved addresses
+  // keep their form, delete dialog and toast in this component, rendered
+  // once outside both layouts.
+  const pageProps = {
+    addresses: {
+      addresses,
+      onAdd: openAddAddress,
+      onEdit: openEditAddress,
+      onDelete: requestDeleteAddress,
+      onSetDefault: makeDefaultAddress,
+    },
+  };
+
   const homeTop = user && (
     <>
       <ProfileSummary
@@ -171,16 +207,12 @@ const Settings = ({ route = SETTINGS_PATH }) => {
               <LegalInfo />
               <BottomSignOutButton onClick={openConfirm} />
             </>
-          ) : isAddresses ? (
-            <SavedAddresses
-              addresses={addresses}
-              onAdd={openAddAddress}
-              onEdit={openEditAddress}
-              onDelete={requestDeleteAddress}
-              onSetDefault={makeDefaultAddress}
-            />
           ) : (
-            <ComingSoon label={section.label} />
+            <SectionBody
+              section={section}
+              layout="phone"
+              pageProps={pageProps}
+            />
           )}
         </main>
       </div>
@@ -218,16 +250,12 @@ const Settings = ({ route = SETTINGS_PATH }) => {
               </header>
               {isHome ? (
                 homeTop
-              ) : isAddresses ? (
-                <SavedAddresses
-                  addresses={addresses}
-                  onAdd={openAddAddress}
-                  onEdit={openEditAddress}
-                  onDelete={requestDeleteAddress}
-                  onSetDefault={makeDefaultAddress}
-                />
               ) : (
-                <ComingSoon label={section.label} />
+                <SectionBody
+                  section={section}
+                  layout="desktop"
+                  pageProps={pageProps}
+                />
               )}
             </main>
           </div>
@@ -249,7 +277,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
         onCancel={cancelDeleteAddress}
         onConfirm={confirmDeleteAddress}
       />
-      <AddressToast toast={toast} onDone={clearToast} />
+      <Toast toast={toast} onDone={clearToast} />
 
       <SignOutDialog
         open={confirmOpen && Boolean(user)}
