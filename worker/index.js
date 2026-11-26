@@ -5,11 +5,19 @@
 // returns index.html without running this script at all.
 //
 // Crawlers such as WhatsApp's link preview, Facebook and Googlebot don't send
-// that header, so for /menu, /settings/orders or /r/CODE Cloudflare would
-// answer 404. This script runs only for those leftover requests: anything that
-// isn't a real file gets the app, so shared links still unfurl and pages stay
-// indexable. A missing file (a path with an extension, e.g. an old
-// /assets/index-abc.js) still returns a real 404.
+// that header. Without this script Cloudflare answered them 404 for /menu,
+// /settings/orders or /r/CODE (checked on the PR #37 preview), so shared
+// links wouldn't unfurl and pages could drop out of search.
+//
+// Passing the request to the ASSETS binding applies the single-page fallback
+// whatever the headers, so crawlers get the app with a 200, the same as the
+// live site did before this config existed. Tested on the preview: browsers,
+// WhatsApp, Facebook and Googlebot all get 200 on those routes.
+//
+// Note: like the live site before, a missing file (e.g. an old
+// /assets/index-abc.js) also gets index.html with a 200. The extension check
+// below only applies if the asset server ever returns a real 404; then
+// missing files stay 404 and only app routes fall back to the app.
 export default {
   async fetch(request, env) {
     const response = await env.ASSETS.fetch(request);
