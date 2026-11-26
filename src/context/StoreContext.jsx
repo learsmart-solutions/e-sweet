@@ -10,6 +10,7 @@ import {
   grantWelcomeCoupon,
   makeReferralCode,
   markCouponUsed,
+  normalizeReferralCode,
   readReferralAccount,
   takePendingReferral,
 } from "../lib/referrals";
@@ -152,15 +153,17 @@ export const StoreProvider = ({ children }) => {
 
   const clearCart = () => setCart({});
 
-  const signup = ({ name, email, phone, password }) => {
+  const signup = ({ name, email, phone, password, referralCode }) => {
     const account = { name, email, phone, password };
     writeJson(ACCOUNT_KEY, account);
 
-    // Signed up from a friend's /r/CODE link: their first order gets a
-    // coupon. Your own code doesn't count.
-    const invitedBy = takePendingReferral();
+    // Signed up from an entered referral code or a friend's /r/CODE link:
+    // their first order gets a coupon. Your own code doesn't count.
+    const explicitCode = normalizeReferralCode(referralCode || "");
+    const invitedBy = explicitCode || takePendingReferral();
     if (invitedBy && invitedBy !== makeReferralCode({ name, email })) {
       grantWelcomeCoupon(email, invitedBy);
+      setCouponsVersion((v) => v + 1);
     }
 
     setUser({ name, email, phone });

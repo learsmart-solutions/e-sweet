@@ -1,3 +1,5 @@
+import { normalizeReferralCode } from "./referrals";
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const normalizePhone = (value = "") => value.replace(/[^\d+]/g, "");
@@ -34,20 +36,29 @@ export const PASSWORD_HINT =
   "At least 8 characters, with a capital letter and a symbol.";
 
 export const getPasswordError = (value = "", isSignup = false) => {
-  if (!value) return "Enter your password.";
+  if (!value || !value.trim()) return "Enter your password.";
   if (isSignup) {
+    if (/\s/.test(value)) return "Password cannot contain spaces.";
     if (value.length < 8) return "Use at least 8 characters for your password.";
     if (!/[A-Z]/.test(value))
       return "Password must contain at least one uppercase letter.";
-    if (!/[^A-Za-z0-9]/.test(value))
+    if (!/[^A-Za-z0-9\s]/.test(value))
       return "Password must contain at least one special character.";
   }
   return "";
 };
 
 export const getConfirmPasswordError = (password, confirmation) => {
-  if (!confirmation) return "Confirm your password.";
+  if (!confirmation || !confirmation.trim()) return "Confirm your password.";
   if (password !== confirmation) return "Passwords do not match.";
+  return "";
+};
+
+export const getReferralCodeError = (value = "") => {
+  if (!value || !value.trim()) return "";
+  if (!normalizeReferralCode(value)) {
+    return "Enter a valid referral code (e.g. ADA-2K7) or leave blank.";
+  }
   return "";
 };
 

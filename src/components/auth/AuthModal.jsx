@@ -10,6 +10,7 @@ import {
   getPasswordError,
   getPhoneError,
   getNameError,
+  getReferralCodeError,
   PASSWORD_HINT,
 } from "../../lib/validation";
 
@@ -40,7 +41,16 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [referralCode, setReferralCode] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try {
+      return window.localStorage.getItem("esweet-pending-referral") || "";
+    } catch {
+      return "";
+    }
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
 
@@ -66,6 +76,9 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
 
       const confirmError = getConfirmPasswordError(password, confirmPassword);
       if (confirmError) nextErrors.confirmPassword = confirmError;
+
+      const referralError = getReferralCodeError(referralCode);
+      if (referralError) nextErrors.referralCode = referralError;
     }
 
     const emailError = getEmailError(email);
@@ -117,6 +130,7 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
         email: email.trim(),
         phone: phone.trim(),
         password,
+        referralCode: referralCode.trim(),
       });
       finish();
       return;
@@ -362,44 +376,93 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
             </label>
 
             {isSignup && (
-              <label className="mt-4 block">
-                <span className="text-[12px] font-bold text-ink">
-                  Confirm password
-                </span>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(event) => {
-                    setConfirmPassword(event.target.value);
-                    clearError("confirmPassword");
-                  }}
-                  onBlur={() => {
-                    const confirmError = getConfirmPasswordError(
-                      password,
-                      confirmPassword,
-                    );
-                    if (confirmError) {
-                      setErrors((current) => ({
-                        ...current,
-                        confirmPassword: confirmError,
-                      }));
+              <>
+                <label className="mt-4 block">
+                  <span className="text-[12px] font-bold text-ink">
+                    Confirm password
+                  </span>
+                  <span className="relative mt-2 block">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(event) => {
+                        setConfirmPassword(event.target.value);
+                        clearError("confirmPassword");
+                      }}
+                      onBlur={() => {
+                        const confirmError = getConfirmPasswordError(
+                          password,
+                          confirmPassword,
+                        );
+                        if (confirmError) {
+                          setErrors((current) => ({
+                            ...current,
+                            confirmPassword: confirmError,
+                          }));
+                        }
+                      }}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      required
+                      aria-invalid={Boolean(errors.confirmPassword)}
+                      aria-describedby={
+                        errors.confirmPassword
+                          ? "auth-modal-confirm-password-error"
+                          : undefined
+                      }
+                      className={inputClass(
+                        Boolean(errors.confirmPassword),
+                        "pr-16",
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((value) => !value)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-bold text-tomato"
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </button>
+                  </span>
+                  <FormError id="auth-modal-confirm-password-error">
+                    {errors.confirmPassword}
+                  </FormError>
+                </label>
+
+                <label className="mt-4 block">
+                  <span className="text-[12px] font-bold text-ink">
+                    Referral code (optional)
+                  </span>
+                  <input
+                    type="text"
+                    value={referralCode}
+                    onChange={(event) => {
+                      setReferralCode(event.target.value.toUpperCase());
+                      clearError("referralCode");
+                    }}
+                    onBlur={() => {
+                      const referralError = getReferralCodeError(referralCode);
+                      if (referralError) {
+                        setErrors((current) => ({
+                          ...current,
+                          referralCode: referralError,
+                        }));
+                      }
+                    }}
+                    autoCapitalize="characters"
+                    placeholder="Enter referral code"
+                    aria-invalid={Boolean(errors.referralCode)}
+                    aria-describedby={
+                      errors.referralCode
+                        ? "auth-modal-referral-error"
+                        : undefined
                     }
-                  }}
-                  autoComplete="new-password"
-                  placeholder="Repeat your password"
-                  required
-                  aria-invalid={Boolean(errors.confirmPassword)}
-                  aria-describedby={
-                    errors.confirmPassword
-                      ? "auth-modal-confirm-password-error"
-                      : undefined
-                  }
-                  className={`mt-2 ${inputClass(Boolean(errors.confirmPassword))}`}
-                />
-                <FormError id="auth-modal-confirm-password-error">
-                  {errors.confirmPassword}
-                </FormError>
-              </label>
+                    className={`mt-2 ${inputClass(Boolean(errors.referralCode))}`}
+                  />
+                  <FormError id="auth-modal-referral-error">
+                    {errors.referralCode}
+                  </FormError>
+                </label>
+              </>
             )}
 
             {error && (

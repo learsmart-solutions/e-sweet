@@ -55,7 +55,10 @@ export const makeReferralCode = ({ name = "", email = "" }) => {
 };
 
 export const normalizeReferralCode = (code = "") => {
-  const clean = decodeURIComponent(code).trim().toUpperCase();
+  let clean = decodeURIComponent(code).trim().toUpperCase();
+  if (/^[A-Z]{3}[2-9A-Z]{3}$/.test(clean)) {
+    clean = `${clean.slice(0, 3)}-${clean.slice(3)}`;
+  }
   return CODE_PATTERN.test(clean) ? clean : null;
 };
 
