@@ -1,0 +1,24 @@
+// Cloudflare Workers configuration for e-sweet.
+//
+// Production: Workers Builds runs `npm run build` then `npx wrangler deploy`
+// for every push to `main`.
+// Previews: every other branch runs `npm run build` then
+// `npx wrangler preview`, which publishes the branch to its own preview URL
+// and posts the link on the pull request.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Must match the Worker's name in the Cloudflare dashboard.
+  "name": "e-sweet",
+  "compatibility_date": "2026-11-12",
+  "assets": {
+    // Vite's build output.
+    "directory": "./dist",
+    // The app has its own router (/menu, /settings/orders, /r/CODE, …), so
+    // any path that isn't a file serves index.html instead of a 404.
+    "not_found_handling": "single-page-application"
+  },
+  // Settings for Worker Previews. Required by `wrangler preview`, even when
+  // empty. The site is static with no variables, secrets or bindings, so
+  // previews need nothing extra.
+  "previews": {}
+}
