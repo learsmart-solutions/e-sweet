@@ -20,6 +20,15 @@ const USER_KEY = "esweet-user";
 const ACCOUNT_KEY = "esweet-account";
 const CART_KEY = "esweet-cart";
 const ADDRESSES_KEY = "esweet-addresses";
+const NOTIFICATIONS_KEY = "esweet-notifications";
+
+// TODO (API): the server must respect these choices before sending any
+// WhatsApp or SMS message, including order updates and promotions.
+const DEFAULT_NOTIFICATIONS = {
+  whatsapp: true,
+  sms: true,
+  promotions: false,
+};
 
 const readJson = (key, fallback) => {
   if (typeof window === "undefined") return fallback;
@@ -50,6 +59,19 @@ export const StoreProvider = ({ children }) => {
   const [addresses, setAddresses] = useState(() =>
     readJson(ADDRESSES_KEY, []),
   );
+  // Notification choices are device-level like the cart and address book.
+  // Defaults match the design: order updates on both channels, promos off.
+  const [notifications, setNotifications] = useState(() => {
+    const stored = readJson(NOTIFICATIONS_KEY, null);
+    if (!stored || typeof stored !== "object" || Array.isArray(stored)) {
+      return { ...DEFAULT_NOTIFICATIONS };
+    }
+    return {
+      whatsapp: stored.whatsapp !== false,
+      sms: stored.sms !== false,
+      promotions: stored.promotions === true,
+    };
+  });
   // Bumped after a coupon changes so `coupons` re-reads storage.
   const [couponsVersion, setCouponsVersion] = useState(0);
 
@@ -67,6 +89,21 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
     writeJson(ADDRESSES_KEY, addresses);
   }, [addresses]);
+
+  const updateNotification = (key, value) => {
+    if ((key === "whatsapp" || key === "sms") && !value) {
+      const otherKey = key === "whatsapp" ? "sms" : "whatsapp";
+      if (!notifications[otherKey]) {
+        return false;
+      }
+    }
+    // Write before the state update so the choice survives an immediate
+    // navigation or tab close, not just the next effect pass.
+    const next = { ...notifications, [key]: Boolean(value) };
+    writeJson(NOTIFICATIONS_KEY, next);
+    setNotifications(next);
+    return true;
+  };
 
   const addAddress = (newAddr) => {
     const id = `addr-${Date.now()}`;
@@ -254,6 +291,8 @@ export const StoreProvider = ({ children }) => {
     updateAddress,
     deleteAddress,
     setDefaultAddress,
+    notifications,
+    updateNotification,
     addItem,
     removeItem,
     clearCart,

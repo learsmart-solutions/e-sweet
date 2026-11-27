@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useStore } from "../context/StoreContext";
 import { formatPhone } from "../lib/validation";
 import ActiveOrderCard from "../components/settings/ActiveOrderCard";
@@ -7,6 +7,7 @@ import SettingsSidebar from "../components/settings/SettingsSidebar";
 import SignedOutPrompt from "../components/settings/SignedOutPrompt";
 import SignOutDialog from "../components/settings/SignOutDialog";
 import Referral from "../components/settings/Referral";
+import Notifications from "../components/settings/Notifications";
 import SavedAddresses, {
   AddressModal,
   DeleteAddressDialog,
@@ -40,6 +41,7 @@ const ComingSoon = ({ label }) => (
 const sectionPages = {
   addresses: SavedAddresses,
   referral: Referral,
+  notifications: Notifications,
 };
 
 // Matches Tailwind's `lg`, where Settings switches to the desktop layout.
@@ -66,6 +68,8 @@ const Settings = ({ route = SETTINGS_PATH }) => {
     updateAddress,
     deleteAddress,
     setDefaultAddress,
+    notifications,
+    updateNotification,
   } = useStore();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [justSignedOut, setJustSignedOut] = useState(false);
@@ -166,7 +170,35 @@ const Settings = ({ route = SETTINGS_PATH }) => {
       onDelete: requestDeleteAddress,
       onSetDefault: makeDefaultAddress,
     },
+    notifications: {
+      notifications,
+      onUpdateNotification: updateNotification,
+      showToast,
+    },
   };
+
+  const displayGroups = useMemo(() => {
+    if (!notifications) return settingsGroups;
+    const updateLabel =
+      notifications.whatsapp && notifications.sms
+        ? "Order updates on"
+        : notifications.whatsapp
+          ? "WhatsApp on"
+          : notifications.sms
+            ? "SMS on"
+            : "Order updates off";
+    const promoLabel = notifications.promotions ? "promos on" : "promos off";
+    const notifDesc = `${updateLabel} · ${promoLabel}`;
+
+    return settingsGroups.map((group) => ({
+      ...group,
+      items: group.items.map((item) =>
+        item.key === "notifications"
+          ? { ...item, description: notifDesc }
+          : item,
+      ),
+    }));
+  }, [notifications]);
 
   const homeTop = user && (
     <>
@@ -201,7 +233,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
           ) : isHome ? (
             <>
               {homeTop}
-              {settingsGroups.map((group) => (
+              {displayGroups.map((group) => (
                 <SettingsGroup key={group.title} {...group} />
               ))}
               <LegalInfo />
