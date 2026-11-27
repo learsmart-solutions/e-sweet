@@ -13,6 +13,7 @@ import {
   readReferralAccount,
   takePendingReferral,
 } from "../lib/referrals";
+import { ACCOUNT_FIELDS, FOOD_PREFERENCES_KEY, removeKey } from "../lib/accountStorage";
 
 const StoreContext = createContext(null);
 
@@ -180,8 +181,31 @@ export const StoreProvider = ({ children }) => {
       name: account.name,
       email: account.email,
       phone: account.phone,
+      photo: account.photo ?? null,
     });
     return true;
+  };
+
+  // Updates the signed-in user and the saved account together. Without the
+  // second half, the old name/email/phone would come back on the next login.
+  // `patch` may hold any of: name, email, phone, photo (a data URL, or null
+  // to go back to the initial).
+  const updateProfile = (patch) => {
+    const changes = Object.fromEntries(
+      Object.entries(patch).filter(([field]) => ACCOUNT_FIELDS.includes(field)),
+    );
+    setUser((current) => (current ? { ...current, ...changes } : current));
+
+    const account = readJson(ACCOUNT_KEY, null);
+    if (account) writeJson(ACCOUNT_KEY, { ...account, ...changes });
+  };
+
+  // Removes the account and what is saved against it. The bag is kept, the
+  // same as signing out, so a half-finished order is not lost.
+  const deleteAccount = () => {
+    removeKey(ACCOUNT_KEY);
+    removeKey(FOOD_PREFERENCES_KEY);
+    setUser(null);
   };
 
   const logout = () => setUser(null);
@@ -260,6 +284,8 @@ export const StoreProvider = ({ children }) => {
     signup,
     login,
     logout,
+    updateProfile,
+    deleteAccount,
   };
 
   return (
