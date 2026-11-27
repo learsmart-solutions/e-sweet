@@ -1,5 +1,4 @@
 import React, { useId } from "react";
-import { useStore } from "../../context/StoreContext";
 import whatsappIcon from "../../assets/icons/settings/whatsapp-20.svg";
 import infoIcon from "../../assets/icons/settings/info-16.svg";
 
@@ -10,7 +9,7 @@ const SmsIcon = ({ size = 20 }) => (
     width={size}
     height={size}
     fill="none"
-    stroke="#D7261E"
+    stroke="currentColor"
     strokeWidth="1.8"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -29,7 +28,7 @@ const StarIcon = ({ size = 20 }) => (
     width={size}
     height={size}
     fill="none"
-    stroke="#D7261E"
+    stroke="currentColor"
     strokeWidth="1.8"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -51,36 +50,8 @@ const WhatsAppImage = ({ size = 20 }) => (
   />
 );
 
-const ToggleSwitch = ({
-  id,
-  checked,
-  onChange,
-  ariaLabel,
-  ariaDescribedBy,
-}) => (
-  <button
-    id={id}
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    aria-label={ariaLabel}
-    aria-describedby={ariaDescribedBy}
-    onClick={(e) => {
-      e.stopPropagation();
-      onChange(!checked);
-    }}
-    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full p-1 transition-colors duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tomato ${
-      checked ? "bg-tomato" : "bg-[#E5DACD]"
-    }`}
-  >
-    <span
-      className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out ${
-        checked ? "translate-x-5" : "translate-x-0"
-      }`}
-    />
-  </button>
-);
-
+// The whole row is the switch: one tab stop, one name and one state.
+// The visual track is decoration, not a second button.
 const NotificationRow = ({
   icon: Icon,
   title,
@@ -92,21 +63,18 @@ const NotificationRow = ({
   const descId = useId();
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-labelledby={titleId}
+      aria-describedby={descId}
       onClick={() => onToggle(!checked)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggle(!checked);
-        }
-      }}
-      className="flex cursor-pointer select-none items-center gap-3.5 px-4 py-4 transition-colors hover:bg-[#FFFBF7] active:bg-[#FDF6ED] sm:gap-4 sm:px-6"
+      className="flex w-full cursor-pointer select-none items-center gap-3.5 px-4 py-4 text-left transition-colors hover:bg-cream active:bg-cream focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-tomato sm:gap-4 sm:px-6"
     >
       <span
         aria-hidden="true"
-        className="grid size-11 shrink-0 place-items-center rounded-full bg-[#FDF0E9]"
+        className="grid size-11 shrink-0 place-items-center rounded-full bg-sand/40 text-tomato"
       >
         <Icon />
       </span>
@@ -124,49 +92,44 @@ const NotificationRow = ({
           {description}
         </span>
       </span>
-      <div className="shrink-0 pl-2">
-        <ToggleSwitch
-          checked={checked}
-          onChange={onToggle}
-          ariaLabel={title}
-          ariaDescribedBy={descId}
+      <span
+        aria-hidden="true"
+        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition-colors duration-200 ease-in-out ${
+          checked ? "bg-tomato" : "bg-sand"
+        }`}
+      >
+        <span
+          className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
         />
-      </div>
-    </div>
+      </span>
+    </button>
   );
 };
 
+const DEFAULT_NOTIFICATIONS = {
+  whatsapp: true,
+  sms: true,
+  promotions: false,
+};
+
 const Notifications = ({
-  notifications: propNotifications,
+  notifications = DEFAULT_NOTIFICATIONS,
   onUpdateNotification,
   showToast,
 }) => {
-  const store = useStore();
-  const currentNotifications = propNotifications ?? store.notifications ?? {
-    whatsapp: true,
-    sms: true,
-    promotions: false,
-  };
-  const update = onUpdateNotification ?? store.updateNotification;
-
+  const currentNotifications = notifications ?? DEFAULT_NOTIFICATIONS;
   const orderUpdatesId = useId();
   const promotionsId = useId();
 
   const handleToggle = (key, nextValue) => {
-    // If the user tries to disable the last active order update channel,
-    // prevent it and provide clear, gentle feedback.
-    if ((key === "whatsapp" || key === "sms") && !nextValue) {
-      const otherKey = key === "whatsapp" ? "sms" : "whatsapp";
-      if (!currentNotifications[otherKey]) {
-        if (showToast) {
-          showToast("Keep at least one on so you know when your food is ready.");
-        }
-        return;
-      }
-    }
-
-    if (update) {
-      update(key, nextValue);
+    if (!onUpdateNotification) return;
+    // The store owns the "keep at least one order update on" rule and
+    // returns false when it refuses a change.
+    const applied = onUpdateNotification(key, nextValue);
+    if (applied === false && showToast) {
+      showToast("Keep at least one on so you know when your food is ready.");
     }
   };
 
@@ -180,7 +143,7 @@ const Notifications = ({
         >
           Order updates
         </h2>
-        <div className="overflow-hidden rounded-[18px] border border-[#F0E4D6] bg-cream-light divide-y divide-[#F0E4D6] sm:rounded-[20px]">
+        <div className="overflow-hidden rounded-[18px] border border-sand/60 bg-cream-light divide-y divide-sand/60 sm:rounded-[20px]">
           <NotificationRow
             icon={WhatsAppImage}
             title="WhatsApp"
@@ -196,7 +159,7 @@ const Notifications = ({
             onToggle={(value) => handleToggle("sms", value)}
           />
         </div>
-        <div className="flex items-center gap-2.5 rounded-[12px] bg-[#EAF3F8] px-4 py-3 sm:rounded-[14px] sm:py-3.5 text-[13px] sm:text-[13.5px] leading-relaxed text-ink">
+        <div className="flex items-center gap-2.5 rounded-[12px] bg-sky/30 px-4 py-3 text-[13px] leading-relaxed text-ink sm:rounded-[14px] sm:py-3.5 sm:text-[13.5px]">
           <span className="shrink-0 text-ink" aria-hidden="true">
             <img src={infoIcon} alt="" width="16" height="16" />
           </span>
@@ -212,7 +175,7 @@ const Notifications = ({
         >
           Promotions and offers
         </h2>
-        <div className="overflow-hidden rounded-[18px] border border-[#F0E4D6] bg-cream-light sm:rounded-[20px]">
+        <div className="overflow-hidden rounded-[18px] border border-sand/60 bg-cream-light sm:rounded-[20px]">
           <NotificationRow
             icon={StarIcon}
             title="Deals and new dishes"

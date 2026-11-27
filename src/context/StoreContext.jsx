@@ -22,6 +22,8 @@ const CART_KEY = "esweet-cart";
 const ADDRESSES_KEY = "esweet-addresses";
 const NOTIFICATIONS_KEY = "esweet-notifications";
 
+// TODO (API): the server must respect these choices before sending any
+// WhatsApp or SMS message, including order updates and promotions.
 const DEFAULT_NOTIFICATIONS = {
   whatsapp: true,
   sms: true,
