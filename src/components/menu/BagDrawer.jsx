@@ -4,6 +4,7 @@ import { Link, navigate } from "../../lib/router";
 import { formatNaira, useStore } from "../../context/StoreContext";
 import WhatsAppIcon from "../WhatsAppIcon";
 import { WHATSAPP_CONTACT_LABEL, whatsappLink } from "../../lib/whatsapp";
+import { createOrderCode } from "../../lib/orderCode";
 import { DELIVERY_FEE } from "../../lib/delivery";
 import SchedulePicker from "./SchedulePicker";
 import {
@@ -235,9 +236,8 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  // The applied coupon and total come in from the click handler. Closing
-  // over them instead makes the React purity lint treat this handler as
-  // render code and flag its Date.now/Math.random calls.
+  // The applied coupon and total come in from the click handler so this
+  // handler never reads stale render-time coupon state.
   const placeOrder = (coupon, orderTotalDue) => {
     if (!cartCount) return;
     if (!user) {
@@ -269,7 +269,7 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
             minute: "2-digit",
           }),
     );
-    const code = `ES-${Math.floor(1000 + Math.random() * 9000)}`;
+    const code = createOrderCode();
     if (coupon) redeemCoupon(coupon.id, code);
     setCouponChoice("auto");
     setOrderCode(code);

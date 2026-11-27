@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { menuItems } from "../data/menu";
+import { createOrderCode } from "../lib/orderCode";
 import { TAKEAWAY_PACK_FEE } from "../lib/pricing";
 import {
   grantWelcomeCoupon,
@@ -150,7 +151,7 @@ export const StoreProvider = ({ children }) => {
     if (!order) return null;
     const nextOrder = {
       ...order,
-      id: order.id || `ES-${Date.now().toString().slice(-4)}`,
+      id: order.id || createOrderCode(),
     };
     setOrders((current) => [nextOrder, ...current]);
     return nextOrder;
