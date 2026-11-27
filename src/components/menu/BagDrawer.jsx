@@ -11,6 +11,7 @@ import {
   isCouponReady,
   minOrderText,
 } from "../../lib/referrals";
+import { buildKitchenNote, readFoodPreferences } from "../../lib/foodPreferences";
 
 const ArrowLeft = () => (
   <svg viewBox="0 0 24 24" className="h-[19px] w-[19px]" aria-hidden="true">
@@ -146,7 +147,11 @@ const BagDrawer = ({ open, step = "order", onClose }) => {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState(user?.phone || "");
-  const [note, setNote] = useState("");
+  // Signed-in customers start with their saved Food preferences (kitchen
+  // note and allergies); they can still edit the note for this order.
+  const [note, setNote] = useState(() =>
+    user ? buildKitchenNote(readFoodPreferences()) : "",
+  );
   const [errors, setErrors] = useState({});
   const [placed, setPlaced] = useState(false);
   const [placedTotal, setPlacedTotal] = useState(0);
