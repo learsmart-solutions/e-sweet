@@ -12,8 +12,8 @@ import truckIcon from "../../assets/icons/settings/truck.svg";
 //   totalSteps: 3,  // bars in the progress strip
 // }
 //
-// Orders are not stored yet, so Settings does not render this card for now.
-// The stage names are still open in Figma (open question 3).
+// Settings renders this card when StoreContext has one order with status
+// "active". The stage names are still open in Figma (open question 3).
 const ActiveOrderCard = ({ order, trackTo }) => {
   const totalSteps = order.totalSteps ?? 3;
 

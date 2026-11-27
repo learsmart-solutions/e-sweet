@@ -14,6 +14,12 @@ import SavedAddresses, {
 } from "../components/settings/SavedAddresses";
 import Toast from "../components/settings/Toast";
 import useMediaQuery from "../hooks/useMediaQuery";
+import OrderHistory from "../components/settings/orders/OrderHistory";
+import MobileOrderDetail from "../components/settings/orders/MobileOrderDetail";
+import ReportOrderDialog from "../components/settings/orders/ReportOrderDialog";
+import ReorderDialog from "../components/settings/orders/ReorderDialog";
+import useOrderHistory from "../components/settings/orders/useOrderHistory";
+import { getActiveOrderCard } from "../components/settings/orders/orderUtils";
 import {
   BottomSignOutButton,
   LegalInfo,
@@ -40,6 +46,7 @@ const ComingSoon = ({ label }) => (
 const sectionPages = {
   addresses: SavedAddresses,
   referral: Referral,
+  orders: OrderHistory,
 };
 
 // Matches Tailwind's `lg`, where Settings switches to the desktop layout.
@@ -66,6 +73,8 @@ const Settings = ({ route = SETTINGS_PATH }) => {
     updateAddress,
     deleteAddress,
     setDefaultAddress,
+    orders = [],
+    addItem,
   } = useStore();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [justSignedOut, setJustSignedOut] = useState(false);
@@ -89,10 +98,12 @@ const Settings = ({ route = SETTINGS_PATH }) => {
   const closeConfirm = useCallback(() => setConfirmOpen(false), []);
 
   const showToast = useCallback(
-    (message) => setToast({ message, id: Date.now() }),
+    (message, tone = "info") => setToast({ message, tone, id: Date.now() }),
     [],
   );
   const clearToast = useCallback(() => setToast(null), []);
+
+  const orderHistory = useOrderHistory({ orders, addItem, showToast });
 
   const openAddAddress = useCallback(
     () => setAddressModal({ open: true, mode: "add", address: null }),
@@ -151,9 +162,17 @@ const Settings = ({ route = SETTINGS_PATH }) => {
     logout();
   };
 
-  // TODO: orders are not stored yet. Pass the in-progress order here once
-  // they are, and the red card will show.
-  const activeOrder = null;
+  const activeOrderCard = getActiveOrderCard(orderHistory.activeOrder);
+
+  const historyProps = {
+    orders,
+    activeOrder: orderHistory.activeOrder,
+    pastOrders: orderHistory.pastOrders,
+    selectedOrder: orderHistory.selectedOrder,
+    detailProps: orderHistory.detailProps,
+    onSelect: orderHistory.handleSelect,
+    onTrack: orderHistory.handleTrack,
+  };
 
   // Props for section pages that need state owned here. Saved addresses
   // keep their form, delete dialog and toast in this component, rendered
@@ -166,6 +185,7 @@ const Settings = ({ route = SETTINGS_PATH }) => {
       onDelete: requestDeleteAddress,
       onSetDefault: makeDefaultAddress,
     },
+    orders: historyProps,
   };
 
   const homeTop = user && (
@@ -175,9 +195,9 @@ const Settings = ({ route = SETTINGS_PATH }) => {
         phone={phone}
         editTo={`${SETTINGS_PATH}/profile`}
       />
-      {activeOrder && (
+      {activeOrderCard && (
         <ActiveOrderCard
-          order={activeOrder}
+          order={activeOrderCard}
           trackTo={`${SETTINGS_PATH}/orders`}
         />
       )}
@@ -278,6 +298,25 @@ const Settings = ({ route = SETTINGS_PATH }) => {
         onConfirm={confirmDeleteAddress}
       />
       <Toast toast={toast} onDone={clearToast} />
+
+      <MobileOrderDetail
+        open={orderHistory.mobileDetailOpen}
+        order={orderHistory.selectedOrder}
+        onClose={orderHistory.closeMobileDetail}
+        detailProps={orderHistory.detailProps}
+      />
+      <ReportOrderDialog
+        open={Boolean(orderHistory.reportOrder)}
+        order={orderHistory.reportOrder}
+        onClose={orderHistory.closeReport}
+        onSent={orderHistory.handleReportSent}
+      />
+      <ReorderDialog
+        open={Boolean(orderHistory.reorderOrder)}
+        order={orderHistory.reorderOrder}
+        onClose={orderHistory.closeReorder}
+        onGoToBag={orderHistory.handleGoToBag}
+      />
 
       <SignOutDialog
         open={confirmOpen && Boolean(user)}

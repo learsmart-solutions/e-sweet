@@ -6,6 +6,8 @@ import React, {
   useState,
 } from "react";
 import { menuItems } from "../data/menu";
+import { createOrderCode } from "../lib/orderCode";
+import { TAKEAWAY_PACK_FEE } from "../lib/pricing";
 import {
   grantWelcomeCoupon,
   makeReferralCode,
@@ -20,6 +22,7 @@ const USER_KEY = "esweet-user";
 const ACCOUNT_KEY = "esweet-account";
 const CART_KEY = "esweet-cart";
 const ADDRESSES_KEY = "esweet-addresses";
+const ORDERS_KEY = "esweet-orders";
 
 const readJson = (key, fallback) => {
   if (typeof window === "undefined") return fallback;
@@ -52,6 +55,13 @@ export const StoreProvider = ({ children }) => {
   );
   // Bumped after a coupon changes so `coupons` re-reads storage.
   const [couponsVersion, setCouponsVersion] = useState(0);
+  // Orders are written by checkout. They start empty so a new account never
+  // looks like it has someone else's order history. Developers can seed
+  // esweet-orders locally to preview the filled state.
+  const [orders, setOrders] = useState(() => {
+    const stored = readJson(ORDERS_KEY, []);
+    return Array.isArray(stored) ? stored : [];
+  });
 
   useEffect(() => {
     if (user) writeJson(USER_KEY, user);
@@ -67,6 +77,10 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
     writeJson(ADDRESSES_KEY, addresses);
   }, [addresses]);
+
+  useEffect(() => {
+    writeJson(ORDERS_KEY, orders);
+  }, [orders]);
 
   const addAddress = (newAddr) => {
     const id = `addr-${Date.now()}`;
@@ -131,6 +145,16 @@ export const StoreProvider = ({ children }) => {
         isDefault: addr.id === id,
       })),
     );
+  };
+
+  const addOrder = (order) => {
+    if (!order) return null;
+    const nextOrder = {
+      ...order,
+      id: order.id || createOrderCode(),
+    };
+    setOrders((current) => [nextOrder, ...current]);
+    return nextOrder;
   };
 
   const addItem = (id) => {
@@ -234,8 +258,7 @@ export const StoreProvider = ({ children }) => {
       ),
     [cartEntries],
   );
-  const takeawayPackFee = 400;
-  const packs = packCount * takeawayPackFee;
+  const packs = packCount * TAKEAWAY_PACK_FEE;
   const bagTotal = subtotal + packs;
 
   const value = {
@@ -254,6 +277,8 @@ export const StoreProvider = ({ children }) => {
     updateAddress,
     deleteAddress,
     setDefaultAddress,
+    orders,
+    addOrder,
     addItem,
     removeItem,
     clearCart,
