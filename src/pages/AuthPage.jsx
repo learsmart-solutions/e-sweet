@@ -3,12 +3,14 @@ import BrandLogo from "../components/BrandLogo";
 import { Link, navigate } from "../lib/router";
 import { useStore } from "../context/StoreContext";
 import FormError from "../components/FormError";
+import { peekPendingReferral } from "../lib/referrals";
 import {
   getConfirmPasswordError,
   getEmailError,
   getPasswordError,
   getPhoneError,
   getNameError,
+  getReferralCodeError,
   PASSWORD_HINT,
 } from "../lib/validation";
 import jollofImg from "../assets/menu/smoky-jollof.png";
@@ -57,7 +59,9 @@ const AuthPage = ({ mode = "signup" }) => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [referralCode, setReferralCode] = useState(() => peekPendingReferral());
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
 
@@ -81,6 +85,9 @@ const AuthPage = ({ mode = "signup" }) => {
 
       const confirmError = getConfirmPasswordError(password, confirmPassword);
       if (confirmError) nextErrors.confirmPassword = confirmError;
+
+      const referralError = getReferralCodeError(referralCode);
+      if (referralError) nextErrors.referralCode = referralError;
     }
 
     const emailError = getEmailError(email);
@@ -105,6 +112,7 @@ const AuthPage = ({ mode = "signup" }) => {
         email: email.trim(),
         phone: phone.trim(),
         password,
+        referralCode: referralCode.trim(),
       });
       navigate("/menu");
       return;
@@ -351,44 +359,91 @@ const AuthPage = ({ mode = "signup" }) => {
             </label>
 
             {isSignup && (
-              <label className="mt-4 block">
-                <span className="text-[12px] font-bold text-ink">
-                  Confirm password
-                </span>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(event) => {
-                    setConfirmPassword(event.target.value);
-                    clearError("confirmPassword");
-                  }}
-                  onBlur={() => {
-                    const confirmError = getConfirmPasswordError(
-                      password,
-                      confirmPassword,
-                    );
-                    if (confirmError) {
-                      setErrors((current) => ({
-                        ...current,
-                        confirmPassword: confirmError,
-                      }));
+              <>
+                <label className="mt-4 block">
+                  <span className="text-[12px] font-bold text-ink">
+                    Confirm password
+                  </span>
+                  <span className="relative mt-2 block">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(event) => {
+                        setConfirmPassword(event.target.value);
+                        clearError("confirmPassword");
+                      }}
+                      onBlur={() => {
+                        const confirmError = getConfirmPasswordError(
+                          password,
+                          confirmPassword,
+                        );
+                        if (confirmError) {
+                          setErrors((current) => ({
+                            ...current,
+                            confirmPassword: confirmError,
+                          }));
+                        }
+                      }}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      required
+                      aria-invalid={Boolean(errors.confirmPassword)}
+                      aria-describedby={
+                        errors.confirmPassword
+                          ? "auth-confirm-password-error"
+                          : undefined
+                      }
+                      className={inputClass(
+                        Boolean(errors.confirmPassword),
+                        "pr-16",
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((value) => !value)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-bold text-tomato"
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </button>
+                  </span>
+                  <FormError id="auth-confirm-password-error">
+                    {errors.confirmPassword}
+                  </FormError>
+                </label>
+
+                <label className="mt-4 block">
+                  <span className="text-[12px] font-bold text-ink">
+                    Referral code (optional)
+                  </span>
+                  <input
+                    type="text"
+                    value={referralCode}
+                    onChange={(event) => {
+                      setReferralCode(event.target.value.toUpperCase());
+                      clearError("referralCode");
+                    }}
+                    onBlur={() => {
+                      const referralError = getReferralCodeError(referralCode);
+                      if (referralError) {
+                        setErrors((current) => ({
+                          ...current,
+                          referralCode: referralError,
+                        }));
+                      }
+                    }}
+                    autoCapitalize="characters"
+                    placeholder="Enter referral code"
+                    aria-invalid={Boolean(errors.referralCode)}
+                    aria-describedby={
+                      errors.referralCode ? "auth-referral-error" : undefined
                     }
-                  }}
-                  autoComplete="new-password"
-                  placeholder="Repeat your password"
-                  required
-                  aria-invalid={Boolean(errors.confirmPassword)}
-                  aria-describedby={
-                    errors.confirmPassword
-                      ? "auth-confirm-password-error"
-                      : undefined
-                  }
-                  className={`mt-2 ${inputClass(Boolean(errors.confirmPassword))}`}
-                />
-                <FormError id="auth-confirm-password-error">
-                  {errors.confirmPassword}
-                </FormError>
-              </label>
+                    className={`mt-2 ${inputClass(Boolean(errors.referralCode))}`}
+                  />
+                  <FormError id="auth-referral-error">
+                    {errors.referralCode}
+                  </FormError>
+                </label>
+              </>
             )}
 
             {error && (

@@ -55,8 +55,15 @@ export const makeReferralCode = ({ name = "", email = "" }) => {
 };
 
 export const normalizeReferralCode = (code = "") => {
-  const clean = decodeURIComponent(code).trim().toUpperCase();
-  return CODE_PATTERN.test(clean) ? clean : null;
+  try {
+    let clean = decodeURIComponent(code).trim().toUpperCase();
+    if (/^[A-Z]{3}[2-9A-Z]{3}$/.test(clean)) {
+      clean = `${clean.slice(0, 3)}-${clean.slice(3)}`;
+    }
+    return CODE_PATTERN.test(clean) ? clean : null;
+  } catch {
+    return null;
+  }
 };
 
 export const referralLink = (code) =>
@@ -161,6 +168,15 @@ export const savePendingReferral = (code) => {
     window.localStorage.setItem(PENDING_KEY, clean);
   } catch {
     // Without storage the invite is simply not applied.
+  }
+};
+
+export const peekPendingReferral = () => {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.localStorage.getItem(PENDING_KEY) || "";
+  } catch {
+    return "";
   }
 };
 
