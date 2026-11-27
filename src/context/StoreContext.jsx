@@ -90,10 +90,6 @@ export const StoreProvider = ({ children }) => {
     writeJson(ADDRESSES_KEY, addresses);
   }, [addresses]);
 
-  useEffect(() => {
-    writeJson(NOTIFICATIONS_KEY, notifications);
-  }, [notifications]);
-
   const updateNotification = (key, value) => {
     if ((key === "whatsapp" || key === "sms") && !value) {
       const otherKey = key === "whatsapp" ? "sms" : "whatsapp";
@@ -101,7 +97,11 @@ export const StoreProvider = ({ children }) => {
         return false;
       }
     }
-    setNotifications((prev) => ({ ...prev, [key]: Boolean(value) }));
+    // Write before the state update so the choice survives an immediate
+    // navigation or tab close, not just the next effect pass.
+    const next = { ...notifications, [key]: Boolean(value) };
+    writeJson(NOTIFICATIONS_KEY, next);
+    setNotifications(next);
     return true;
   };
 
