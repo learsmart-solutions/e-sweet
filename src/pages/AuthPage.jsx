@@ -3,6 +3,7 @@ import BrandLogo from "../components/BrandLogo";
 import { Link, navigate } from "../lib/router";
 import { useStore } from "../context/StoreContext";
 import FormError from "../components/FormError";
+import { peekPendingReferral } from "../lib/referrals";
 import {
   getConfirmPasswordError,
   getEmailError,
@@ -58,14 +59,7 @@ const AuthPage = ({ mode = "signup" }) => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [referralCode, setReferralCode] = useState(() => {
-    if (typeof window === "undefined") return "";
-    try {
-      return window.localStorage.getItem("esweet-pending-referral") || "";
-    } catch {
-      return "";
-    }
-  });
+  const [referralCode, setReferralCode] = useState(() => peekPendingReferral());
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");

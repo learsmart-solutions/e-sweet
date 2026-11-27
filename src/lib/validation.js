@@ -33,7 +33,7 @@ export const getNameError = (value = "") =>
 // Shown under the signup password field, so people see every rule before
 // they type rather than discovering them one error at a time.
 export const PASSWORD_HINT =
-  "At least 8 characters, with a capital letter and a symbol.";
+  "At least 8 characters, with a capital letter, a symbol and no spaces.";
 
 export const getPasswordError = (value = "", isSignup = false) => {
   if (!value || !value.trim()) return "Enter your password.";

@@ -159,8 +159,13 @@ export const StoreProvider = ({ children }) => {
 
     // Signed up from an entered referral code or a friend's /r/CODE link:
     // their first order gets a coupon. Your own code doesn't count.
-    const explicitCode = normalizeReferralCode(referralCode || "");
-    const invitedBy = explicitCode || takePendingReferral();
+    // If a referral code was explicitly passed (even if empty/cleared), respect
+    // that choice and consume any pending invite so it doesn't linger.
+    const pendingCode = takePendingReferral();
+    const invitedBy =
+      referralCode !== undefined
+        ? normalizeReferralCode(referralCode || "")
+        : pendingCode;
     if (invitedBy && invitedBy !== makeReferralCode({ name, email })) {
       grantWelcomeCoupon(email, invitedBy);
       setCouponsVersion((v) => v + 1);

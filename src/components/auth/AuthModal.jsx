@@ -4,6 +4,7 @@ import BrandLogo from "../BrandLogo";
 import { navigate } from "../../lib/router";
 import { useStore } from "../../context/StoreContext";
 import FormError from "../FormError";
+import { peekPendingReferral } from "../../lib/referrals";
 import {
   getConfirmPasswordError,
   getEmailError,
@@ -41,14 +42,7 @@ const AuthModal = ({ initialMode = "signin", onClose }) => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [referralCode, setReferralCode] = useState(() => {
-    if (typeof window === "undefined") return "";
-    try {
-      return window.localStorage.getItem("esweet-pending-referral") || "";
-    } catch {
-      return "";
-    }
-  });
+  const [referralCode, setReferralCode] = useState(() => peekPendingReferral());
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
