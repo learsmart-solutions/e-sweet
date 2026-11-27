@@ -27,6 +27,7 @@ import {
   settingsGroups,
   settingsItems,
 } from "../components/settings/sections";
+import SectionContent from "../components/settings/SectionContent";
 
 // Section pages (Profile, Saved addresses, …) are being built separately.
 // Until one lands, its route shows this panel inside the Settings shell.
@@ -52,7 +53,7 @@ const DESKTOP_QUERY = "(min-width: 1024px)";
 const SectionBody = ({ section, layout, pageProps = {} }) => {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const Page = sectionPages[section.key];
-  if (!Page) return <ComingSoon label={section.label} />;
+  if (!Page) return <SectionContent section={section} fallback={<ComingSoon label={section.label} />} />;
   if (isDesktop !== (layout === "desktop")) return null;
   return <Page layout={layout} {...pageProps[section.key]} />;
 };
